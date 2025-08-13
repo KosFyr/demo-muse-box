@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
 import { VerticalGameBoard } from './VerticalGameBoard';
+import { FillBlankQuestion } from './FillBlankQuestion';
 import { useQuestions, Question } from '@/hooks/useQuestions';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,13 +47,22 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
     setShowFeedback(false);
   };
 
-  const handleAnswer = async (answer: string) => {
+  const handleAnswer = async (answer: string | boolean, userAnswers?: string[]) => {
     if (!currentQuestion || isAnswering) return;
     
     setIsAnswering(true);
-    setSelectedAnswer(answer);
     
-    const isCorrect = answer === currentQuestion.correct_answer;
+    let isCorrect = false;
+    
+    if (currentQuestion.question_type === 'fill-in-the-blank') {
+      // For fill-in-the-blank questions, the answer checking is done in FillBlankQuestion component
+      isCorrect = answer as boolean;
+    } else {
+      // For other question types
+      setSelectedAnswer(answer as string);
+      isCorrect = answer === currentQuestion.correct_answer;
+    }
+    
     setFeedback(isCorrect ? 'Σωστά! 🎉' : 'Λάθος! 😅');
     setShowFeedback(true);
 
@@ -142,71 +152,85 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       </div>
 
       {/* Question Section */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-        <div className="space-y-4">
-          <div className="text-center">
-            <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-sm font-medium">
-              {currentQuestion.question_type === 'true-false' ? 'Σωστό/Λάθος' : 'Αντιστοίχιση'}
-            </span>
-          </div>
-          
-          <h3 className="text-xl text-white text-center font-medium">
-            {currentQuestion.question_text}
-          </h3>
+      {currentQuestion.question_type === 'fill-in-the-blank' ? (
+        <FillBlankQuestion
+          questionText={currentQuestion.question_text}
+          correctAnswers={currentQuestion.correct_answer.split('|')}
+          explanation={currentQuestion.explanation}
+          onAnswer={(isCorrect, userAnswers) => handleAnswer(isCorrect, userAnswers)}
+          feedback={showFeedback ? {
+            isCorrect: feedback.includes('Σωστά'),
+            explanation: currentQuestion.explanation
+          } : undefined}
+        />
+      ) : (
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="space-y-4">
+            <div className="text-center">
+              <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-sm font-medium">
+                {currentQuestion.question_type === 'true-false' ? 'Σωστό/Λάθος' : 
+                 currentQuestion.question_type === 'multiple-choice' ? 'Πολλαπλή Επιλογή' : 'Αντιστοίχιση'}
+              </span>
+            </div>
+            
+            <h3 className="text-xl text-white text-center font-medium">
+              {currentQuestion.question_text}
+            </h3>
 
-          {/* Answer Options */}
-          <div className="space-y-3">
-            {currentQuestion.question_type === 'true-false' ? (
-              <div className="flex justify-center space-x-4">
-                <Button
-                  onClick={() => handleAnswer('true')}
-                  disabled={isAnswering}
-                  className="bg-green-500 hover:bg-green-600 text-white border-0 px-8"
-                >
-                  Σωστό ✓
-                </Button>
-                <Button
-                  onClick={() => handleAnswer('false')}
-                  disabled={isAnswering}
-                  className="bg-red-500 hover:bg-red-600 text-white border-0 px-8"
-                >
-                  Λάθος ✗
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {currentQuestion.options?.map((option, index) => (
+            {/* Answer Options */}
+            <div className="space-y-3">
+              {currentQuestion.question_type === 'true-false' ? (
+                <div className="flex justify-center space-x-4">
                   <Button
-                    key={index}
-                    onClick={() => handleAnswer(option)}
+                    onClick={() => handleAnswer('true')}
                     disabled={isAnswering}
-                    variant="outline"
-                    className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+                    className="bg-green-500 hover:bg-green-600 text-white border-0 px-8"
                   >
-                    {option}
+                    Σωστό ✓
                   </Button>
-                ))}
+                  <Button
+                    onClick={() => handleAnswer('false')}
+                    disabled={isAnswering}
+                    className="bg-red-500 hover:bg-red-600 text-white border-0 px-8"
+                  >
+                    Λάθος ✗
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {currentQuestion.options?.map((option, index) => (
+                    <Button
+                      key={index}
+                      onClick={() => handleAnswer(option)}
+                      disabled={isAnswering}
+                      variant="outline"
+                      className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+                    >
+                      {option}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Feedback */}
+            {showFeedback && (
+              <div className="text-center">
+                <div className={`text-lg font-bold ${
+                  feedback.includes('Σωστά') ? 'text-green-300' : 'text-red-300'
+                }`}>
+                  {feedback}
+                </div>
+                {currentQuestion.explanation && (
+                  <p className="text-white/80 text-sm mt-2">
+                    {currentQuestion.explanation}
+                  </p>
+                )}
               </div>
             )}
           </div>
-
-          {/* Feedback */}
-          {showFeedback && (
-            <div className="text-center">
-              <div className={`text-lg font-bold ${
-                feedback.includes('Σωστά') ? 'text-green-300' : 'text-red-300'
-              }`}>
-                {feedback}
-              </div>
-              {currentQuestion.explanation && (
-                <p className="text-white/80 text-sm mt-2">
-                  {currentQuestion.explanation}
-                </p>
-              )}
-            </div>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -5,7 +5,7 @@ export interface Question {
   id: string;
   category_id: string;
   question_text: string;
-  question_type: 'true-false' | 'matching' | 'multiple-choice';
+  question_type: 'true-false' | 'matching' | 'multiple-choice' | 'fill-in-the-blank';
   difficulty_level: number;
   points_value: number;
   correct_answer: string;
