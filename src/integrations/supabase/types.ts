@@ -14,7 +14,183 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty_level: number
+          id: string
+          name: string
+          order_index: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty_level?: number
+          id?: string
+          name: string
+          order_index?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty_level?: number
+          id?: string
+          name?: string
+          order_index?: number
+        }
+        Relationships: []
+      }
+      fill_blank_exercises: {
+        Row: {
+          answers: string[]
+          category_id: string
+          created_at: string
+          difficulty_level: number
+          exercise_text: string
+          id: string
+        }
+        Insert: {
+          answers: string[]
+          category_id: string
+          created_at?: string
+          difficulty_level?: number
+          exercise_text: string
+          id?: string
+        }
+        Update: {
+          answers?: string[]
+          category_id?: string
+          created_at?: string
+          difficulty_level?: number
+          exercise_text?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fill_blank_exercises_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_progress: {
+        Row: {
+          category_id: string | null
+          completion_percentage: number
+          correct_answers: number
+          created_at: string
+          current_position: number
+          id: string
+          total_questions_answered: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          completion_percentage?: number
+          correct_answers?: number
+          created_at?: string
+          current_position?: number
+          id?: string
+          total_questions_answered?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          completion_percentage?: number
+          correct_answers?: number
+          created_at?: string
+          current_position?: number
+          id?: string
+          total_questions_answered?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_progress_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          category_id: string
+          correct_answer: string
+          created_at: string
+          difficulty_level: number
+          explanation: string | null
+          id: string
+          options: string[] | null
+          points_value: number
+          question_text: string
+          question_type: string
+        }
+        Insert: {
+          category_id: string
+          correct_answer: string
+          created_at?: string
+          difficulty_level?: number
+          explanation?: string | null
+          id?: string
+          options?: string[] | null
+          points_value?: number
+          question_text: string
+          question_type: string
+        }
+        Update: {
+          category_id?: string
+          correct_answer?: string
+          created_at?: string
+          difficulty_level?: number
+          explanation?: string | null
+          id?: string
+          options?: string[] | null
+          points_value?: number
+          question_text?: string
+          question_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
