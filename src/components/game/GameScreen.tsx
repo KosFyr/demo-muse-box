@@ -165,8 +165,8 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
             isCorrect: feedback.includes('Σωστά'),
             explanation: currentQuestion.explanation
           } : undefined}
-          hasAnswered={hasAnswered}
-          onNextQuestion={handleNextQuestion}
+          hasAnswered={showFeedback}
+          onNextQuestion={showFeedback ? handleNextQuestion : undefined}
         />
       ) : (
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

@@ -96,7 +96,7 @@ export function FillBlankQuestion({
           {/* Question with input fields */}
           <div className="text-lg leading-relaxed">
             {questionParts.map((part, index) => (
-              <React.Fragment key={index}>
+              <div key={index} className="inline">
                 <span>{part}</span>
                 {index < blanksCount && (
                   <span className="inline-block mx-1 relative">
@@ -137,7 +137,7 @@ export function FillBlankQuestion({
                     </div>
                   </span>
                 )}
-              </React.Fragment>
+              </div>
             ))}
           </div>
           
