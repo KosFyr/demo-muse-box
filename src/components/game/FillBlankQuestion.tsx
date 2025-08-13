@@ -95,33 +95,42 @@ export function FillBlankQuestion({
               <React.Fragment key={index}>
                 <span>{part}</span>
                 {index < blanksCount && (
-                  <span className="inline-block mx-1">
-                    <Input
-                      id={`blank-${index}`}
-                      value={userAnswers[index] || ''}
-                      onChange={(e) => handleInputChange(index, e.target.value)}
-                      onKeyPress={(e) => handleKeyPress(e, index)}
-                      disabled={hasAnswered}
-                      className={cn(
-                        "inline-block w-24 h-8 text-center text-sm border-2",
-                        hasAnswered && getInputFeedback(index) && (
-                          getInputFeedback(index)!.isCorrect 
-                            ? "border-green-500 bg-green-50" 
-                            : "border-red-500 bg-red-50"
-                        )
-                      )}
-                      placeholder="..."
-                      autoComplete="off"
-                    />
-                    {hasAnswered && getInputFeedback(index) && (
-                      <span className="inline-block ml-1">
-                        {getInputFeedback(index)!.isCorrect ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-600" />
+                  <span className="inline-block mx-1 relative">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex items-center gap-1">
+                        <Input
+                          id={`blank-${index}`}
+                          value={userAnswers[index] || ''}
+                          onChange={(e) => handleInputChange(index, e.target.value)}
+                          onKeyPress={(e) => handleKeyPress(e, index)}
+                          disabled={hasAnswered}
+                          className={cn(
+                            "inline-block w-24 h-8 text-center text-sm border-2",
+                            hasAnswered && getInputFeedback(index) && (
+                              getInputFeedback(index)!.isCorrect 
+                                ? "border-green-500 bg-green-50 text-green-700" 
+                                : "border-red-500 bg-red-50 text-red-700"
+                            )
+                          )}
+                          placeholder="..."
+                          autoComplete="off"
+                        />
+                        {hasAnswered && getInputFeedback(index) && (
+                          <span className="inline-block">
+                            {getInputFeedback(index)!.isCorrect ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            )}
+                          </span>
                         )}
-                      </span>
-                    )}
+                      </div>
+                      {hasAnswered && getInputFeedback(index) && !getInputFeedback(index)!.isCorrect && (
+                        <div className="text-xs text-green-700 font-medium bg-green-100 px-2 py-1 rounded border border-green-300">
+                          ✓ {correctAnswers[index]}
+                        </div>
+                      )}
+                    </div>
                   </span>
                 )}
               </React.Fragment>
