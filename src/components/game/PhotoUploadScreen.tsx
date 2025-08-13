@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlayerData } from './GameContainer';
-import { loadImage, cropFaceFromImage } from '@/lib/avatar';
+import { processAvatarImage } from '@/lib/avatar';
 import { Upload, Camera } from 'lucide-react';
 
 interface PhotoUploadScreenProps {
@@ -27,16 +27,11 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
     setUploading(true);
     
     try {
-      // Load and preview image
-      const imageElement = await loadImage(file);
-      const croppedFace = await cropFaceFromImage(imageElement);
+      const processedBlob = await processAvatarImage(file);
+      const previewUrl = URL.createObjectURL(processedBlob);
       
-      // Create preview URL
-      const url = URL.createObjectURL(croppedFace);
-      setPreviewUrl(url);
-      
-      // Update player data with avatar
-      onPlayerDataUpdate({ avatarImageUrl: url });
+      setPreviewUrl(previewUrl);
+      onPlayerDataUpdate({ avatarImageUrl: previewUrl });
       
     } catch (error) {
       console.error('Error processing image:', error);
@@ -139,36 +134,38 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
           </div>
         </div>
 
-        {/* Preview Avatar */}
+        {/* Big Head Avatar Preview */}
         {previewUrl && (
-          <div className="space-y-4">
-            <h3 className="text-white text-lg">Προεπισκόπηση Stick Figure Avatar:</h3>
-            <div className="bg-white/20 rounded-2xl p-6">
-              <div className="relative w-24 h-32 mx-auto">
-                {/* Stick figure body */}
-                <svg viewBox="0 0 100 130" className="w-full h-full">
-                  {/* Head circle with face */}
-                  <circle cx="50" cy="20" r="15" fill="white" stroke="#333" strokeWidth="2"/>
-                  {/* Body line */}
-                  <line x1="50" y1="35" x2="50" y2="80" stroke="#333" strokeWidth="3"/>
-                  {/* Arms */}
-                  <line x1="50" y1="50" x2="30" y2="65" stroke="#333" strokeWidth="3"/>
-                  <line x1="50" y1="50" x2="70" y2="65" stroke="#333" strokeWidth="3"/>
-                  {/* Legs */}
-                  <line x1="50" y1="80" x2="35" y2="110" stroke="#333" strokeWidth="3"/>
-                  <line x1="50" y1="80" x2="65" y2="110" stroke="#333" strokeWidth="3"/>
-                </svg>
-                
-                {/* Face overlay */}
-                <div 
-                  className="absolute top-1 left-1/2 transform -translate-x-1/2 w-7 h-7 rounded-full overflow-hidden border border-gray-300"
-                  style={{
-                    backgroundImage: `url(${previewUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                />
+          <div className="mt-6 flex flex-col items-center">
+            <h3 className="text-lg font-semibold text-white mb-4">Your Big Head Avatar!</h3>
+            <div className="bg-white/20 backdrop-blur rounded-lg p-8">
+              {/* Big Head Stick Figure */}
+              <div className="flex flex-col items-center">
+                {/* Big Head */}
+                <div className="relative w-24 h-24 mb-2">
+                  <img 
+                    src={previewUrl} 
+                    alt="Your big head" 
+                    className="w-full h-full rounded-full object-cover border-3 border-white shadow-lg"
+                  />
+                </div>
+                {/* Thin Body */}
+                <div className="flex flex-col items-center text-white">
+                  <div className="w-0.5 h-12 bg-white mb-1"></div> {/* Torso */}
+                  <div className="flex">
+                    <div className="w-8 h-0.5 bg-white rotate-12 -mr-4"></div> {/* Left arm */}
+                    <div className="w-8 h-0.5 bg-white -rotate-12"></div> {/* Right arm */}
+                  </div>
+                  <div className="w-0.5 h-8 bg-white mt-1 mb-1"></div> {/* Lower torso */}
+                  <div className="flex">
+                    <div className="w-8 h-0.5 bg-white rotate-12 -mr-4"></div> {/* Left leg */}
+                    <div className="w-8 h-0.5 bg-white -rotate-12"></div> {/* Right leg */}
+                  </div>
+                </div>
               </div>
+              <p className="text-center text-white/80 text-sm mt-4">
+                Look at that big head! Perfect for climbing! 🧗‍♂️
+              </p>
             </div>
           </div>
         )}

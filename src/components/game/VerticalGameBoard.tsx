@@ -162,14 +162,14 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
               </g>
             )}
             
-            {/* Stick figure */}
+            {/* Big Head Stick Figure */}
             <g>
-              {/* Head with player face */}
-              <circle cx="0" cy="0" r="12" fill="white" stroke="#333" strokeWidth="2" />
+              {/* Big Head with player face */}
+              <circle cx="0" cy="0" r="18" fill="white" stroke="#333" strokeWidth="2" />
               
-              {/* Player face overlay */}
+              {/* Player face overlay - bigger */}
               {playerData.avatarImageUrl && (
-                <foreignObject x="-10" y="-10" width="20" height="20">
+                <foreignObject x="-15" y="-15" width="30" height="30">
                   <div 
                     className="w-full h-full rounded-full overflow-hidden"
                     style={{
@@ -181,24 +181,24 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
                 </foreignObject>
               )}
               
-              {/* Body */}
-              <line x1="0" y1="12" x2="0" y2="32" stroke="#333" strokeWidth="3" />
+              {/* Thin Body */}
+              <line x1="0" y1="18" x2="0" y2="40" stroke="#333" strokeWidth="2" />
               
-              {/* Arms - animated when climbing */}
+              {/* Thin Arms - animated when climbing */}
               <line 
-                x1="0" y1="20" x2="-15" y2="25" 
-                stroke="#333" strokeWidth="3"
+                x1="0" y1="25" x2="-12" y2="30" 
+                stroke="#333" strokeWidth="1.5"
                 className={isMoving ? 'animate-pulse' : ''}
               />
               <line 
-                x1="0" y1="20" x2="15" y2="25" 
-                stroke="#333" strokeWidth="3"
+                x1="0" y1="25" x2="12" y2="30" 
+                stroke="#333" strokeWidth="1.5"
                 className={isMoving ? 'animate-pulse' : ''}
               />
               
-              {/* Legs */}
-              <line x1="0" y1="32" x2="-8" y2="45" stroke="#333" strokeWidth="3" />
-              <line x1="0" y1="32" x2="8" y2="45" stroke="#333" strokeWidth="3" />
+              {/* Thin Legs */}
+              <line x1="0" y1="40" x2="-8" y2="50" stroke="#333" strokeWidth="1.5" />
+              <line x1="0" y1="40" x2="8" y2="50" stroke="#333" strokeWidth="1.5" />
             </g>
 
             {/* Climbing animation particles */}
