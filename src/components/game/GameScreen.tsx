@@ -23,6 +23,7 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
   const [feedback, setFeedback] = useState<string>('');
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
+  const [hasAnswered, setHasAnswered] = useState(false);
 
   useEffect(() => {
     if (questions.length > 0) {
@@ -45,6 +46,7 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
     setSelectedAnswer('');
     setFeedback('');
     setShowFeedback(false);
+    setHasAnswered(false);
   };
 
   const handleAnswer = async (answer: string | boolean, userAnswers?: string[]) => {
@@ -65,6 +67,7 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
     
     setFeedback(isCorrect ? 'Σωστά! 🎉' : 'Λάθος! 😅');
     setShowFeedback(true);
+    setHasAnswered(true);
 
     // Update used questions
     const newUsedQuestions = new Set(gameState.usedQuestions);
@@ -87,15 +90,15 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       savePlayerProgress(newState);
     }
 
-    // Wait for animation, then continue
-    setTimeout(() => {
-      setIsAnswering(false);
-      if (newState.currentPosition >= 15) {
-        onGameEnd();
-      } else {
-        loadNextQuestion();
-      }
-    }, 2000);
+    setIsAnswering(false);
+  };
+
+  const handleNextQuestion = () => {
+    if (gameState.currentPosition >= 15) {
+      onGameEnd();
+    } else {
+      loadNextQuestion();
+    }
   };
 
   const savePlayerProgress = async (state: Partial<GameState>) => {
@@ -162,6 +165,8 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
             isCorrect: feedback.includes('Σωστά'),
             explanation: currentQuestion.explanation
           } : undefined}
+          hasAnswered={hasAnswered}
+          onNextQuestion={handleNextQuestion}
         />
       ) : (
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
@@ -215,17 +220,23 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
 
             {/* Feedback */}
             {showFeedback && (
-              <div className="text-center">
+              <div className="text-center space-y-4">
                 <div className={`text-lg font-bold ${
                   feedback.includes('Σωστά') ? 'text-green-300' : 'text-red-300'
                 }`}>
                   {feedback}
                 </div>
                 {currentQuestion.explanation && (
-                  <p className="text-white/80 text-sm mt-2">
+                  <p className="text-white/80 text-sm">
                     {currentQuestion.explanation}
                   </p>
                 )}
+                <Button
+                  onClick={handleNextQuestion}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Επόμενη Ερώτηση
+                </Button>
               </div>
             )}
           </div>
