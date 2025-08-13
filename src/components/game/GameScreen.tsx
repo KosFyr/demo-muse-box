@@ -2,63 +2,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
 import { VerticalGameBoard } from './VerticalGameBoard';
-import { Question } from '@/lib/supabase';
+import { useQuestions, Question } from '@/hooks/useQuestions';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock questions - will be moved to Supabase later
-const mockQuestions: Question[] = [
-  {
-    id: '1',
-    category_id: 'basic',
-    question_text: 'Το αντικείμενο πρόγραμμα παράγεται από τον μεταγλωττιστή.',
-    question_type: 'true-false',
-    difficulty_level: 1,
-    points_value: 1,
-    correct_answer: 'true',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    category_id: 'basic',
-    question_text: 'Σε ένα δυαδικό δένδρο κάθε κόμβος έχει 0, 1 ή 2 υποδένδρα.',
-    question_type: 'true-false',
-    difficulty_level: 1,
-    points_value: 1,
-    correct_answer: 'true',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '3',
-    category_id: 'basic',
-    question_text: 'Η ενθυλάκωση υποδηλώνει ότι οι εσωτερικές λειτουργίες ενός αντικειμένου είναι ορατές στον έξω κόσμο.',
-    question_type: 'true-false',
-    difficulty_level: 2,
-    points_value: 1,
-    correct_answer: 'false',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '4',
-    category_id: 'basic',
-    question_text: 'Παράλειψη δήλωσης μεταβλητής',
-    question_type: 'matching',
-    difficulty_level: 2,
-    points_value: 1,
-    correct_answer: 'Συντακτικό Λάθος',
-    options: ['Συντακτικό Λάθος', 'Λάθος κατά την εκτέλεση', 'Λογικό Λάθος'],
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '5',
-    category_id: 'basic',
-    question_text: 'Διαίρεση με το μηδέν (0)',
-    question_type: 'matching',
-    difficulty_level: 2,
-    points_value: 1,
-    correct_answer: 'Λάθος κατά την εκτέλεση',
-    options: ['Συντακτικό Λάθος', 'Λάθος κατά την εκτέλεση', 'Λογικό Λάθος'],
-    created_at: new Date().toISOString()
-  }
-];
 
 interface GameScreenProps {
   playerData: PlayerData;
@@ -68,6 +15,8 @@ interface GameScreenProps {
 }
 
 export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd }: GameScreenProps) => {
+  const { questions, loading } = useQuestions();
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [feedback, setFeedback] = useState<string>('');
@@ -75,11 +24,15 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
   const [isAnswering, setIsAnswering] = useState(false);
 
   useEffect(() => {
-    loadNextQuestion();
-  }, [gameState.usedQuestions]);
+    if (questions.length > 0) {
+      loadNextQuestion();
+    }
+  }, [gameState.usedQuestions, questions]);
 
   const loadNextQuestion = () => {
-    const availableQuestions = mockQuestions.filter(q => !gameState.usedQuestions.has(q.id));
+    if (questions.length === 0) return;
+    
+    const availableQuestions = questions.filter(q => !gameState.usedQuestions.has(q.id));
     
     if (availableQuestions.length === 0 || gameState.currentPosition >= 15) {
       onGameEnd();
@@ -119,6 +72,11 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
 
     onGameStateUpdate(newState);
 
+    // Save progress to database
+    if (user) {
+      savePlayerProgress(newState);
+    }
+
     // Wait for animation, then continue
     setTimeout(() => {
       setIsAnswering(false);
@@ -130,11 +88,36 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
     }, 2000);
   };
 
-  if (!currentQuestion) {
+  const savePlayerProgress = async (state: Partial<GameState>) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('player_progress')
+        .upsert({
+          user_id: user.id,
+          current_position: state.currentPosition || gameState.currentPosition,
+          correct_answers: state.correctAnswers || gameState.correctAnswers,
+          total_questions_answered: state.totalQuestions || gameState.totalQuestions,
+          completion_percentage: ((state.correctAnswers || gameState.correctAnswers) / (state.totalQuestions || gameState.totalQuestions || 1)) * 100,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,category_id'
+        });
+
+      if (error) {
+        console.error('Error saving progress:', error);
+      }
+    } catch (error) {
+      console.error('Error saving progress:', error);
+    }
+  };
+
+  if (loading || !currentQuestion) {
     return (
       <div className="text-center text-white">
         <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
-        <p>Φόρτωση ερώτησης...</p>
+        <p>{loading ? 'Φόρτωση ερωτήσεων...' : 'Φόρτωση ερώτησης...'}</p>
       </div>
     );
   }
