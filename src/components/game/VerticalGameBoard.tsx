@@ -182,23 +182,23 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
               )}
               
               {/* Thin Body */}
-              <line x1="0" y1="18" x2="0" y2="40" stroke="#333" strokeWidth="2" />
+              <line x1="0" y1="18" x2="0" y2="40" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2" />
               
               {/* Thin Arms - animated when climbing */}
               <line 
                 x1="0" y1="25" x2="-12" y2="30" 
-                stroke="#333" strokeWidth="1.5"
+                stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
                 className={isMoving ? 'animate-pulse' : ''}
               />
               <line 
                 x1="0" y1="25" x2="12" y2="30" 
-                stroke="#333" strokeWidth="1.5"
+                stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
                 className={isMoving ? 'animate-pulse' : ''}
               />
               
               {/* Thin Legs */}
-              <line x1="0" y1="40" x2="-8" y2="50" stroke="#333" strokeWidth="1.5" />
-              <line x1="0" y1="40" x2="8" y2="50" stroke="#333" strokeWidth="1.5" />
+              <line x1="0" y1="40" x2="-8" y2="50" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5" />
+              <line x1="0" y1="40" x2="8" y2="50" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5" />
             </g>
 
             {/* Climbing animation particles */}

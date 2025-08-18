@@ -9,6 +9,7 @@ export type GameScreen = 'home' | 'photo-upload' | 'game' | 'end';
 export interface PlayerData {
   name: string;
   avatarImageUrl?: string;
+  stickFigureColor?: 'classic' | 'pink';
 }
 
 export interface GameState {

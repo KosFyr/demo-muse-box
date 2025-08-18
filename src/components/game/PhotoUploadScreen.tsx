@@ -1,10 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlayerData } from './GameContainer';
 import { processAvatarImage } from '@/lib/avatar';
-import { Upload, Camera } from 'lucide-react';
+import { Upload, Camera, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface PhotoUploadScreenProps {
   onNext: () => void;
@@ -16,28 +19,109 @@ interface PhotoUploadScreenProps {
 export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerData }: PhotoUploadScreenProps) => {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [stickFigureColor, setStickFigureColor] = useState<'classic' | 'pink'>('classic');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+
+  // Load existing avatar and stick figure color
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url, stick_figure_color')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.avatar_url) {
+        setPreviewUrl(profile.avatar_url);
+        onPlayerDataUpdate({ avatarImageUrl: profile.avatar_url });
+      }
+      
+      if (profile?.stick_figure_color) {
+        const color = profile.stick_figure_color as 'classic' | 'pink';
+        setStickFigureColor(color);
+        onPlayerDataUpdate({ stickFigureColor: color });
+      }
+    };
+
+    loadUserProfile();
+  }, [user, onPlayerDataUpdate]);
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Παρακαλώ επιλέξτε μια εικόνα!');
+      toast.error('Παρακαλώ επιλέξτε μια εικόνα!');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Πρέπει να συνδεθείτε για να ανεβάσετε φωτογραφία');
       return;
     }
 
     setUploading(true);
     
     try {
+      // Process the image
       const processedBlob = await processAvatarImage(file);
-      const previewUrl = URL.createObjectURL(processedBlob);
       
-      setPreviewUrl(previewUrl);
-      onPlayerDataUpdate({ avatarImageUrl: previewUrl });
+      // Upload to Supabase Storage
+      const fileName = `${user.id}/${Date.now()}.png`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, processedBlob, {
+          contentType: 'image/png',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+      
+      setPreviewUrl(publicUrl);
+      onPlayerDataUpdate({ avatarImageUrl: publicUrl });
+
+      // Update profile with new avatar URL
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          avatar_url: publicUrl,
+          stick_figure_color: stickFigureColor
+        });
+
+      if (profileError) throw profileError;
+      
+      toast.success('Η φωτογραφία αποθηκεύτηκε με επιτυχία!');
       
     } catch (error) {
       console.error('Error processing image:', error);
-      alert('Σφάλμα κατά την επεξεργασία της εικόνας. Δοκιμάστε μια άλλη φωτογραφία.');
+      toast.error('Σφάλμα κατά την επεξεργασία της εικόνας. Δοκιμάστε μια άλλη φωτογραφία.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleStickFigureColorChange = async (color: 'classic' | 'pink') => {
+    setStickFigureColor(color);
+    onPlayerDataUpdate({ stickFigureColor: color });
+
+    if (user) {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          stick_figure_color: color,
+          ...(previewUrl && { avatar_url: previewUrl })
+        });
+
+      if (error) {
+        console.error('Error updating stick figure color:', error);
+      }
     }
   };
 
@@ -56,7 +140,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
     }
   };
 
-  const canProceed = playerData.name.trim() && previewUrl;
+  const canProceed = playerData.name.trim() && (previewUrl || !user);
 
   return (
     <div className="text-center space-y-8 p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl">
@@ -117,7 +201,17 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <p className="text-white">Τέλεια! Κάντε κλικ για να αλλάξετε φωτογραφία</p>
+                <div className="flex items-center gap-2 justify-center">
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/20 border-white/40 text-white hover:bg-white/30"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    Αλλαγή Avatar
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -131,6 +225,44 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Stick Figure Color Selection */}
+        <div className="space-y-4">
+          <Label className="text-white text-lg">Χρώμα Stick Figure</Label>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => handleStickFigureColorChange('classic')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                stickFigureColor === 'classic' 
+                  ? 'border-white bg-white/20' 
+                  : 'border-white/40 bg-white/10 hover:bg-white/20'
+              }`}
+            >
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <div className="text-white text-xs">Classic</div>
+                </div>
+                <div className="text-white text-sm">Κλασικό</div>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => handleStickFigureColorChange('pink')}
+              className={`p-4 rounded-lg border-2 transition-all ${
+                stickFigureColor === 'pink' 
+                  ? 'border-white bg-white/20' 
+                  : 'border-white/40 bg-white/10 hover:bg-white/20'
+              }`}
+            >
+              <div className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 rounded-full bg-pink-400/60 flex items-center justify-center">
+                  <div className="text-white text-xs">Pink</div>
+                </div>
+                <div className="text-white text-sm">Ρόζ</div>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -150,16 +282,16 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                   />
                 </div>
                 {/* Thin Body */}
-                <div className="flex flex-col items-center text-white">
-                  <div className="w-0.5 h-12 bg-white mb-1"></div> {/* Torso */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-0.5 h-12 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Torso */}
                   <div className="flex">
-                    <div className="w-8 h-0.5 bg-white rotate-12 -mr-4"></div> {/* Left arm */}
-                    <div className="w-8 h-0.5 bg-white -rotate-12"></div> {/* Right arm */}
+                    <div className={`w-8 h-0.5 rotate-12 -mr-4 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left arm */}
+                    <div className={`w-8 h-0.5 -rotate-12 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right arm */}
                   </div>
-                  <div className="w-0.5 h-8 bg-white mt-1 mb-1"></div> {/* Lower torso */}
+                  <div className={`w-0.5 h-8 mt-1 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Lower torso */}
                   <div className="flex">
-                    <div className="w-8 h-0.5 bg-white rotate-12 -mr-4"></div> {/* Left leg */}
-                    <div className="w-8 h-0.5 bg-white -rotate-12"></div> {/* Right leg */}
+                    <div className={`w-8 h-0.5 rotate-12 -mr-4 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left leg */}
+                    <div className={`w-8 h-0.5 -rotate-12 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right leg */}
                   </div>
                 </div>
               </div>
