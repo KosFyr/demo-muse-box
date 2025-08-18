@@ -10,6 +10,7 @@ interface VerticalGameBoardProps {
 export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: VerticalGameBoardProps) => {
   const [animatingPosition, setAnimatingPosition] = useState(currentPosition);
   const [showParachute, setShowParachute] = useState(false);
+  const [isWalking, setIsWalking] = useState(false);
 
   useEffect(() => {
     if (currentPosition !== animatingPosition) {
@@ -21,8 +22,21 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
           setShowParachute(false);
         }, 1500);
       } else {
-        // Climbing
-        setAnimatingPosition(currentPosition);
+        // Climbing - walk through each step
+        setIsWalking(true);
+        const walkToNextLevel = (from: number, to: number) => {
+          if (from < to) {
+            setTimeout(() => {
+              setAnimatingPosition(from + 1);
+              if (from + 1 < to) {
+                walkToNextLevel(from + 1, to);
+              } else {
+                setTimeout(() => setIsWalking(false), 300);
+              }
+            }, 500); // 500ms per step
+          }
+        };
+        walkToNextLevel(animatingPosition, currentPosition);
       }
     }
   }, [currentPosition, animatingPosition]);
@@ -184,30 +198,30 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
               {/* Thin Body - with walking animation */}
               <line x1="0" y1="18" x2="0" y2="40" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2" />
               
-              {/* Arms - with walking swing */}
+               {/* Arms - with walking swing */}
               <line 
                 x1="0" y1="28" x2="-10" y2="35" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
-                className={isMoving ? 'animate-armSwing' : ''}
+                className={isWalking ? 'animate-armSwing' : ''}
               />
               <line 
                 x1="0" y1="28" x2="10" y2="35" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
-                className={isMoving ? 'animate-armSwing' : ''}
-                style={isMoving ? { animationDirection: 'reverse' } : {}}
+                className={isWalking ? 'animate-armSwing' : ''}
+                style={isWalking ? { animationDirection: 'reverse' } : {}}
               />
               
               {/* Legs - with walking motion */}
               <line 
                 x1="0" y1="40" x2="-8" y2="50" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
-                className={isMoving ? 'animate-walkStep' : ''}
+                className={isWalking ? 'animate-walkStep' : ''}
               />
               <line 
                 x1="0" y1="40" x2="8" y2="50" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
-                className={isMoving ? 'animate-walkStep' : ''}
-                style={isMoving ? { animationDirection: 'reverse' } : {}}
+                className={isWalking ? 'animate-walkStep' : ''}
+                style={isWalking ? { animationDirection: 'reverse' } : {}}
               />
             </g>
 
