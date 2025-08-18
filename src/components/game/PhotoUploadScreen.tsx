@@ -231,7 +231,8 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
         {/* Stick Figure Color Selection */}
         <div className="space-y-4">
           <Label className="text-white text-lg">Χρώμα Stick Figure</Label>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-6 justify-center">
+            {/* Classic Stick Figure */}
             <button
               onClick={() => handleStickFigureColorChange('classic')}
               className={`p-4 rounded-lg border-2 transition-all ${
@@ -240,14 +241,50 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                   : 'border-white/40 bg-white/10 hover:bg-white/20'
               }`}
             >
-              <div className="flex flex-col items-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <div className="text-white text-xs">Classic</div>
+              <div className="flex flex-col items-center space-y-3">
+                {/* Mini Stick Figure Preview */}
+                <div className="relative bg-white/10 rounded-lg p-3 w-16 h-20">
+                  <svg width="40" height="56" viewBox="0 0 40 56" className="mx-auto">
+                    {/* Head */}
+                    <circle cx="20" cy="12" r="10" fill="white" stroke="#333" strokeWidth="1.5" />
+                    
+                    {/* Face or User Avatar */}
+                    {previewUrl ? (
+                      <foreignObject x="12" y="4" width="16" height="16">
+                        <div 
+                          className="w-full h-full rounded-full overflow-hidden"
+                          style={{
+                            backgroundImage: `url(${previewUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        />
+                      </foreignObject>
+                    ) : (
+                      <g>
+                        <circle cx="17" cy="9" r="1.5" fill="#333" />
+                        <circle cx="23" cy="9" r="1.5" fill="#333" />
+                        <path d="M 16 14 Q 20 16 24 14" stroke="#333" strokeWidth="1" fill="none" />
+                      </g>
+                    )}
+                    
+                    {/* Body */}
+                    <line x1="20" y1="22" x2="20" y2="35" stroke="#333" strokeWidth="1.5" />
+                    
+                    {/* Arms */}
+                    <line x1="20" y1="27" x2="12" y2="32" stroke="#333" strokeWidth="1" />
+                    <line x1="20" y1="27" x2="28" y2="32" stroke="#333" strokeWidth="1" />
+                    
+                    {/* Legs */}
+                    <line x1="20" y1="35" x2="14" y2="45" stroke="#333" strokeWidth="1" />
+                    <line x1="20" y1="35" x2="26" y2="45" stroke="#333" strokeWidth="1" />
+                  </svg>
                 </div>
-                <div className="text-white text-sm">Κλασικό</div>
+                <div className="text-white text-sm font-medium">Κλασικό</div>
               </div>
             </button>
             
+            {/* Pink Stick Figure */}
             <button
               onClick={() => handleStickFigureColorChange('pink')}
               className={`p-4 rounded-lg border-2 transition-all ${
@@ -256,11 +293,46 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                   : 'border-white/40 bg-white/10 hover:bg-white/20'
               }`}
             >
-              <div className="flex flex-col items-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-pink-400/60 flex items-center justify-center">
-                  <div className="text-white text-xs">Pink</div>
+              <div className="flex flex-col items-center space-y-3">
+                {/* Mini Stick Figure Preview */}
+                <div className="relative bg-white/10 rounded-lg p-3 w-16 h-20">
+                  <svg width="40" height="56" viewBox="0 0 40 56" className="mx-auto">
+                    {/* Head */}
+                    <circle cx="20" cy="12" r="10" fill="white" stroke="#F472B6" strokeWidth="1.5" />
+                    
+                    {/* Face or User Avatar */}
+                    {previewUrl ? (
+                      <foreignObject x="12" y="4" width="16" height="16">
+                        <div 
+                          className="w-full h-full rounded-full overflow-hidden"
+                          style={{
+                            backgroundImage: `url(${previewUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        />
+                      </foreignObject>
+                    ) : (
+                      <g>
+                        <circle cx="17" cy="9" r="1.5" fill="#F472B6" />
+                        <circle cx="23" cy="9" r="1.5" fill="#F472B6" />
+                        <path d="M 16 14 Q 20 16 24 14" stroke="#F472B6" strokeWidth="1" fill="none" />
+                      </g>
+                    )}
+                    
+                    {/* Body */}
+                    <line x1="20" y1="22" x2="20" y2="35" stroke="#F472B6" strokeWidth="1.5" />
+                    
+                    {/* Arms */}
+                    <line x1="20" y1="27" x2="12" y2="32" stroke="#F472B6" strokeWidth="1" />
+                    <line x1="20" y1="27" x2="28" y2="32" stroke="#F472B6" strokeWidth="1" />
+                    
+                    {/* Legs */}
+                    <line x1="20" y1="35" x2="14" y2="45" stroke="#F472B6" strokeWidth="1" />
+                    <line x1="20" y1="35" x2="26" y2="45" stroke="#F472B6" strokeWidth="1" />
+                  </svg>
                 </div>
-                <div className="text-white text-sm">Ρόζ</div>
+                <div className="text-white text-sm font-medium">Ρόζ</div>
               </div>
             </button>
           </div>
