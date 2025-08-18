@@ -26,10 +26,11 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
   const [hasAnswered, setHasAnswered] = useState(false);
 
   useEffect(() => {
-    if (questions.length > 0) {
+    // Load the first question only when questions are ready and none is loaded yet
+    if (questions.length > 0 && !currentQuestion) {
       loadNextQuestion();
     }
-  }, [gameState.usedQuestions, questions]);
+  }, [questions]);
 
   const loadNextQuestion = () => {
     if (questions.length === 0) return;
