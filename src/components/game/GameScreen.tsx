@@ -227,11 +227,6 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
                 }`}>
                   {feedback}
                 </div>
-                {currentQuestion.explanation && (
-                  <p className="text-white/80 text-sm">
-                    {currentQuestion.explanation}
-                  </p>
-                )}
                 <Button
                   onClick={handleNextQuestion}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
