@@ -108,21 +108,35 @@ export const cropFaceFromImage = async (imageElement: HTMLImageElement): Promise
     
     if (!ctx) throw new Error('Could not get canvas context');
     
-    // Enhanced face detection area - focus on upper portion for better face capture
-    const faceAreaRatio = 0.7; // Use 70% of the image focusing on the center-top area
-    const size = Math.min(imageElement.naturalWidth, imageElement.naturalHeight) * faceAreaRatio;
-    const bigHeadSize = 120; // Larger size for big head effect
+    // Better face detection area - focus more on upper center for face
+    const faceAreaRatio = 0.6; // Use 60% of the image
+    const bigHeadSize = 120; // Size for big head effect
     
     canvas.width = bigHeadSize;
     canvas.height = bigHeadSize;
     
-    // Center-top crop for better face positioning
-    const sx = (imageElement.naturalWidth - size) / 2;
-    const sy = Math.max(0, (imageElement.naturalHeight - size) / 3); // Focus on upper third
+    // Calculate crop area more precisely for face detection
+    const sourceSize = Math.min(imageElement.naturalWidth, imageElement.naturalHeight) * faceAreaRatio;
     
-    ctx.drawImage(imageElement, sx, sy, size, size, 0, 0, bigHeadSize, bigHeadSize);
+    // Center horizontally, but focus on upper 25% of the image for better face capture
+    const sx = (imageElement.naturalWidth - sourceSize) / 2;
+    const sy = Math.max(0, imageElement.naturalHeight * 0.15); // Start from 15% down from top
     
-    // Add slight circular mask for better integration with stick figure
+    // Ensure we don't crop beyond image boundaries
+    const actualSourceSize = Math.min(
+      sourceSize,
+      imageElement.naturalWidth - sx,
+      imageElement.naturalHeight - sy
+    );
+    
+    // Draw the cropped face area
+    ctx.drawImage(
+      imageElement, 
+      sx, sy, actualSourceSize, actualSourceSize, // Source rectangle (face area)
+      0, 0, bigHeadSize, bigHeadSize // Destination rectangle (scaled to head size)
+    );
+    
+    // Add circular mask for clean integration
     ctx.globalCompositeOperation = 'destination-in';
     ctx.beginPath();
     ctx.arc(bigHeadSize / 2, bigHeadSize / 2, bigHeadSize / 2 - 2, 0, Math.PI * 2);

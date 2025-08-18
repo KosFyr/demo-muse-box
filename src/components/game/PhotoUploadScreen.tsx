@@ -268,16 +268,16 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                       </g>
                     )}
                     
-                    {/* Body */}
-                    <line x1="20" y1="22" x2="20" y2="35" stroke="#333" strokeWidth="1.5" />
+                    {/* Body - straight up */}
+                    <line x1="20" y1="22" x2="20" y2="38" stroke="#333" strokeWidth="1.5" />
                     
-                    {/* Arms */}
-                    <line x1="20" y1="27" x2="12" y2="32" stroke="#333" strokeWidth="1" />
-                    <line x1="20" y1="27" x2="28" y2="32" stroke="#333" strokeWidth="1" />
+                    {/* Arms - down naturally */}
+                    <line x1="20" y1="28" x2="15" y2="35" stroke="#333" strokeWidth="1" />
+                    <line x1="20" y1="28" x2="25" y2="35" stroke="#333" strokeWidth="1" />
                     
-                    {/* Legs */}
-                    <line x1="20" y1="35" x2="14" y2="45" stroke="#333" strokeWidth="1" />
-                    <line x1="20" y1="35" x2="26" y2="45" stroke="#333" strokeWidth="1" />
+                    {/* Legs - straight down */}
+                    <line x1="20" y1="38" x2="16" y2="50" stroke="#333" strokeWidth="1" />
+                    <line x1="20" y1="38" x2="24" y2="50" stroke="#333" strokeWidth="1" />
                   </svg>
                 </div>
                 <div className="text-white text-sm font-medium">Κλασικό</div>
@@ -320,16 +320,16 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                       </g>
                     )}
                     
-                    {/* Body */}
-                    <line x1="20" y1="22" x2="20" y2="35" stroke="#F472B6" strokeWidth="1.5" />
+                    {/* Body - straight up */}
+                    <line x1="20" y1="22" x2="20" y2="38" stroke="#F472B6" strokeWidth="1.5" />
                     
-                    {/* Arms */}
-                    <line x1="20" y1="27" x2="12" y2="32" stroke="#F472B6" strokeWidth="1" />
-                    <line x1="20" y1="27" x2="28" y2="32" stroke="#F472B6" strokeWidth="1" />
+                    {/* Arms - down naturally */}
+                    <line x1="20" y1="28" x2="15" y2="35" stroke="#F472B6" strokeWidth="1" />
+                    <line x1="20" y1="28" x2="25" y2="35" stroke="#F472B6" strokeWidth="1" />
                     
-                    {/* Legs */}
-                    <line x1="20" y1="35" x2="14" y2="45" stroke="#F472B6" strokeWidth="1" />
-                    <line x1="20" y1="35" x2="26" y2="45" stroke="#F472B6" strokeWidth="1" />
+                    {/* Legs - straight down */}
+                    <line x1="20" y1="38" x2="16" y2="50" stroke="#F472B6" strokeWidth="1" />
+                    <line x1="20" y1="38" x2="24" y2="50" stroke="#F472B6" strokeWidth="1" />
                   </svg>
                 </div>
                 <div className="text-white text-sm font-medium">Ρόζ</div>
@@ -353,17 +353,17 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                     className="w-full h-full rounded-full object-cover border-3 border-white shadow-lg"
                   />
                 </div>
-                {/* Thin Body */}
+                {/* Thin Body - natural upright stance */}
                 <div className="flex flex-col items-center">
                   <div className={`w-0.5 h-12 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Torso */}
                   <div className="flex">
-                    <div className={`w-8 h-0.5 rotate-12 -mr-4 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left arm */}
-                    <div className={`w-8 h-0.5 -rotate-12 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right arm */}
+                    <div className={`w-6 h-0.5 rotate-12 -mr-3 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left arm */}
+                    <div className={`w-6 h-0.5 -rotate-12 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right arm */}
                   </div>
-                  <div className={`w-0.5 h-8 mt-1 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Lower torso */}
+                  <div className={`w-0.5 h-6 mt-1 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Lower torso */}
                   <div className="flex">
-                    <div className={`w-8 h-0.5 rotate-12 -mr-4 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left leg */}
-                    <div className={`w-8 h-0.5 -rotate-12 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right leg */}
+                    <div className={`w-6 h-0.5 rotate-6 -mr-3 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left leg */}
+                    <div className={`w-6 h-0.5 -rotate-6 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right leg */}
                   </div>
                 </div>
               </div>

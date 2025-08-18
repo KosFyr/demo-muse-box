@@ -181,24 +181,34 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
                 </foreignObject>
               )}
               
-              {/* Thin Body */}
+              {/* Thin Body - with walking animation */}
               <line x1="0" y1="18" x2="0" y2="40" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2" />
               
-              {/* Thin Arms - animated when climbing */}
+              {/* Arms - with walking swing */}
               <line 
-                x1="0" y1="25" x2="-12" y2="30" 
+                x1="0" y1="28" x2="-10" y2="35" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
-                className={isMoving ? 'animate-pulse' : ''}
+                className={isMoving ? 'animate-armSwing' : ''}
               />
               <line 
-                x1="0" y1="25" x2="12" y2="30" 
+                x1="0" y1="28" x2="10" y2="35" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
-                className={isMoving ? 'animate-pulse' : ''}
+                className={isMoving ? 'animate-armSwing' : ''}
+                style={isMoving ? { animationDirection: 'reverse' } : {}}
               />
               
-              {/* Thin Legs */}
-              <line x1="0" y1="40" x2="-8" y2="50" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5" />
-              <line x1="0" y1="40" x2="8" y2="50" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5" />
+              {/* Legs - with walking motion */}
+              <line 
+                x1="0" y1="40" x2="-8" y2="50" 
+                stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
+                className={isMoving ? 'animate-walkStep' : ''}
+              />
+              <line 
+                x1="0" y1="40" x2="8" y2="50" 
+                stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
+                className={isMoving ? 'animate-walkStep' : ''}
+                style={isMoving ? { animationDirection: 'reverse' } : {}}
+              />
             </g>
 
             {/* Climbing animation particles */}
