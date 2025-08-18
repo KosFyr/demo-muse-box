@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -32,7 +33,20 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isForgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Email στάλθηκε!",
+          description: "Έλεγξε το email σου για επαναφορά κωδικού.",
+        });
+        setIsForgotPassword(false);
+        setIsLogin(true);
+      } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -82,12 +96,12 @@ export default function Auth() {
       <Card className="w-full max-w-md bg-white/10 backdrop-blur-md border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">
-            {isLogin ? 'Είσοδος' : 'Εγγραφή'}
+            {isForgotPassword ? 'Επαναφορά Κωδικού' : (isLogin ? 'Είσοδος' : 'Εγγραφή')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !isForgotPassword && (
               <div className="space-y-2">
                 <Label htmlFor="displayName" className="text-white">
                   Όνομα χρήστη
@@ -97,7 +111,7 @@ export default function Auth() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  required={!isLogin}
+                  required={!isLogin && !isForgotPassword}
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
                   placeholder="Πώς θα σε φωνάζουμε;"
                 />
@@ -119,44 +133,67 @@ export default function Auth() {
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-white">
-                Κωδικός
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                placeholder="Ο κωδικός σου"
-              />
-            </div>
+            {!isForgotPassword && (
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-white">
+                  Κωδικός
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required={!isForgotPassword}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  placeholder="Ο κωδικός σου"
+                />
+              </div>
+            )}
             
             <Button
               type="submit"
               disabled={loading}
               className="w-full bg-white text-blue-600 hover:bg-white/90 font-semibold"
             >
-              {loading ? 'Φόρτωση...' : (isLogin ? 'Είσοδος' : 'Εγγραφή')}
+              {loading ? 'Φόρτωση...' : (
+                isForgotPassword ? 'Στείλε Email Επαναφοράς' : 
+                (isLogin ? 'Είσοδος' : 'Εγγραφή')
+              )}
             </Button>
           </form>
           
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
+            {!isForgotPassword && isLogin && (
+              <button
+                onClick={() => {
+                  setIsForgotPassword(true);
+                  setPassword('');
+                }}
+                className="text-white/80 hover:text-white underline block w-full"
+              >
+                Ξέχασες τον κωδικό σου;
+              </button>
+            )}
+            
             <button
               onClick={() => {
-                setIsLogin(!isLogin);
+                if (isForgotPassword) {
+                  setIsForgotPassword(false);
+                  setIsLogin(true);
+                } else {
+                  setIsLogin(!isLogin);
+                }
                 setEmail('');
                 setPassword('');
                 setDisplayName('');
               }}
               className="text-white/80 hover:text-white underline"
             >
-              {isLogin 
-                ? 'Δεν έχεις λογαριασμό; Κάνε εγγραφή' 
-                : 'Έχεις ήδη λογαριασμό; Κάνε είσοδος'
-              }
+              {isForgotPassword ? 'Πίσω στην είσοδο' : (
+                isLogin 
+                  ? 'Δεν έχεις λογαριασμό; Κάνε εγγραφή' 
+                  : 'Έχεις ήδη λογαριασμό; Κάνε είσοδος'
+              )}
             </button>
           </div>
         </CardContent>
