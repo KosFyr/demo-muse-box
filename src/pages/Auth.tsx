@@ -18,21 +18,62 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if user is already logged in or if this is a password reset
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
+      // Check if this is a password reset (recovery) URL
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      if (type === 'recovery' && accessToken) {
+        // This is a password reset, show password reset form
+        setIsForgotPassword(false);
+        setIsLogin(false); // Show as signup form but we'll handle it as password reset
+        toast({
+          title: "Επαναφορά Κωδικού",
+          description: "Εισάγετε τον νέο σας κωδικό",
+        });
+        return;
+      }
+      
       if (session) {
         navigate('/');
       }
     };
     checkUser();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Check if this is a password reset scenario
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      if (type === 'recovery' && accessToken && !isLogin && !isForgotPassword) {
+        // This is a password reset, update the password
+        const { error } = await supabase.auth.updateUser({
+          password: password
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Κωδικός αλλάχθηκε!",
+          description: "Ο κωδικός σας ενημερώθηκε με επιτυχία.",
+        });
+        
+        // Clear the URL hash and redirect
+        window.location.hash = '';
+        navigate('/');
+        return;
+      }
+      
       if (isForgotPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth`,
@@ -96,7 +137,9 @@ export default function Auth() {
       <Card className="w-full max-w-md bg-white/10 backdrop-blur-md border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">
-            {isForgotPassword ? 'Επαναφορά Κωδικού' : (isLogin ? 'Είσοδος' : 'Εγγραφή')}
+            {isForgotPassword ? 'Επαναφορά Κωδικού' : 
+             (new URLSearchParams(window.location.hash.substring(1)).get('type') === 'recovery' && !isLogin ? 'Νέος Κωδικός' : 
+              (isLogin ? 'Είσοδος' : 'Εγγραφή'))}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -157,7 +200,8 @@ export default function Auth() {
             >
               {loading ? 'Φόρτωση...' : (
                 isForgotPassword ? 'Στείλε Email Επαναφοράς' : 
-                (isLogin ? 'Είσοδος' : 'Εγγραφή')
+                (new URLSearchParams(window.location.hash.substring(1)).get('type') === 'recovery' && !isLogin ? 'Αλλαγή Κωδικού' :
+                 (isLogin ? 'Είσοδος' : 'Εγγραφή'))
               )}
             </Button>
           </form>

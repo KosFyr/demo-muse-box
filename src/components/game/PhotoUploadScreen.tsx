@@ -23,14 +23,14 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
 
-  // Load existing avatar and stick figure color
+  // Load existing avatar, stick figure color, and display name
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!user) return;
       
       const { data: profile } = await supabase
         .from('profiles')
-        .select('avatar_url, stick_figure_color')
+        .select('avatar_url, stick_figure_color, display_name')
         .eq('id', user.id)
         .single();
 
@@ -43,6 +43,10 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
         const color = profile.stick_figure_color as 'classic' | 'pink';
         setStickFigureColor(color);
         onPlayerDataUpdate({ stickFigureColor: color });
+      }
+
+      if (profile?.display_name && !playerData.name) {
+        onPlayerDataUpdate({ name: profile.display_name });
       }
     };
 
@@ -85,13 +89,14 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
       setPreviewUrl(publicUrl);
       onPlayerDataUpdate({ avatarImageUrl: publicUrl });
 
-      // Update profile with new avatar URL
+      // Update profile with new avatar URL and name
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
           avatar_url: publicUrl,
-          stick_figure_color: stickFigureColor
+          stick_figure_color: stickFigureColor,
+          display_name: playerData.name
         });
 
       if (profileError) throw profileError;
@@ -116,6 +121,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
         .upsert({
           id: user.id,
           stick_figure_color: color,
+          display_name: playerData.name,
           ...(previewUrl && { avatar_url: previewUrl })
         });
 
