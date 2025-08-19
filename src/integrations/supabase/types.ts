@@ -196,7 +196,82 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      fill_blank_exercises_public: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          difficulty_level: number | null
+          exercise_text: string | null
+          id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          difficulty_level?: number | null
+          exercise_text?: string | null
+          id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          difficulty_level?: number | null
+          exercise_text?: string | null
+          id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fill_blank_exercises_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions_public: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          difficulty_level: number | null
+          explanation: string | null
+          id: string | null
+          options: string[] | null
+          points_value: number | null
+          question_text: string | null
+          question_type: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          difficulty_level?: number | null
+          explanation?: string | null
+          id?: string | null
+          options?: string[] | null
+          points_value?: number | null
+          question_text?: string | null
+          question_type?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          difficulty_level?: number | null
+          explanation?: string | null
+          id?: string | null
+          options?: string[] | null
+          points_value?: number | null
+          question_text?: string | null
+          question_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
