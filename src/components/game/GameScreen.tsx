@@ -5,6 +5,7 @@ import { VerticalGameBoard } from './VerticalGameBoard';
 import { FillBlankQuestion } from './FillBlankQuestion';
 import { useQuestions, Question } from '@/hooks/useQuestions';
 import { useAuth } from '@/hooks/useAuth';
+import { useAnswerValidation } from '@/hooks/useAnswerValidation';
 import { supabase } from '@/integrations/supabase/client';
 
 
@@ -18,6 +19,7 @@ interface GameScreenProps {
 export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd }: GameScreenProps) => {
   const { questions, loading } = useQuestions();
   const { user } = useAuth();
+  const { validateAnswer, validating } = useAnswerValidation();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [feedback, setFeedback] = useState<string>('');
@@ -51,44 +53,53 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
   };
 
   const handleAnswer = async (answer: string | boolean, userAnswers?: string[]) => {
-    if (!currentQuestion || isAnswering) return;
+    if (!currentQuestion || isAnswering || validating) return;
     
     setIsAnswering(true);
     
-    let isCorrect = false;
-    
-    if (currentQuestion.question_type === 'fill-in-the-blank') {
-      // For fill-in-the-blank questions, the answer checking is done in FillBlankQuestion component
-      isCorrect = answer as boolean;
-    } else {
-      // For other question types
-      setSelectedAnswer(answer as string);
-      isCorrect = answer === currentQuestion.correct_answer;
-    }
-    
-    setFeedback(isCorrect ? 'Σωστά! 🎉' : 'Λάθος! 😅');
-    setShowFeedback(true);
-    setHasAnswered(true);
+    try {
+      // Use secure server-side validation
+      const result = await validateAnswer(
+        currentQuestion.id,
+        currentQuestion.question_type,
+        answer,
+        userAnswers
+      );
+      
+      const isCorrect = result.isCorrect;
+      
+      if (currentQuestion.question_type !== 'fill-in-the-blank') {
+        setSelectedAnswer(answer as string);
+      }
+      
+      setFeedback(result.feedback);
+      setShowFeedback(true);
+      setHasAnswered(true);
 
-    // Update used questions
-    const newUsedQuestions = new Set(gameState.usedQuestions);
-    newUsedQuestions.add(currentQuestion.id);
+      // Update used questions
+      const newUsedQuestions = new Set(gameState.usedQuestions);
+      newUsedQuestions.add(currentQuestion.id);
 
-    // Update game state
-    const newState = {
-      usedQuestions: newUsedQuestions,
-      totalQuestions: gameState.totalQuestions + 1,
-      correctAnswers: isCorrect ? gameState.correctAnswers + 1 : gameState.correctAnswers,
-      currentPosition: isCorrect 
-        ? Math.min(15, gameState.currentPosition + 2)
-        : Math.max(1, gameState.currentPosition - 1)
-    };
+      // Update game state
+      const newState = {
+        usedQuestions: newUsedQuestions,
+        totalQuestions: gameState.totalQuestions + 1,
+        correctAnswers: isCorrect ? gameState.correctAnswers + 1 : gameState.correctAnswers,
+        currentPosition: isCorrect 
+          ? Math.min(15, gameState.currentPosition + 2)
+          : Math.max(1, gameState.currentPosition - 1)
+      };
 
-    onGameStateUpdate(newState);
+      onGameStateUpdate(newState);
 
-    // Save progress to database
-    if (user) {
-      savePlayerProgress(newState);
+      // Save progress to database
+      if (user) {
+        savePlayerProgress(newState);
+      }
+    } catch (error) {
+      console.error('Error validating answer:', error);
+      setFeedback('Σφάλμα επικύρωσης απάντησης');
+      setShowFeedback(true);
     }
 
     setIsAnswering(false);
@@ -159,15 +170,12 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       {currentQuestion.question_type === 'fill-in-the-blank' ? (
         <FillBlankQuestion
           questionText={currentQuestion.question_text}
-          correctAnswers={currentQuestion.correct_answer.split('|')}
           explanation={currentQuestion.explanation}
-          onAnswer={(isCorrect, userAnswers) => handleAnswer(isCorrect, userAnswers)}
-          feedback={showFeedback ? {
-            isCorrect: feedback.includes('Σωστά'),
-            explanation: currentQuestion.explanation
-          } : undefined}
+          onAnswer={(userAnswers) => handleAnswer('', userAnswers)}
+          feedback={showFeedback ? feedback : undefined}
           hasAnswered={showFeedback}
           onNextQuestion={showFeedback ? handleNextQuestion : undefined}
+          isValidating={validating}
         />
       ) : (
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

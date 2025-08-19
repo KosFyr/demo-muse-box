@@ -4,30 +4,26 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, HelpCircle } from 'lucide-react';
-import { fuzzyMatchMultiple } from '@/lib/fuzzyMatch';
 import { cn } from '@/lib/utils';
 
 interface FillBlankQuestionProps {
   questionText: string;
-  correctAnswers: string[];
   explanation?: string;
-  onAnswer: (isCorrect: boolean, userAnswers: string[]) => void;
-  feedback?: {
-    isCorrect: boolean;
-    explanation?: string;
-  };
+  onAnswer: (userAnswers: string[]) => void;
+  feedback?: string;
   hasAnswered?: boolean;
   onNextQuestion?: () => void;
+  isValidating?: boolean;
 }
 
 export function FillBlankQuestion({
   questionText,
-  correctAnswers,
   explanation,
   onAnswer,
   feedback,
   hasAnswered = false,
-  onNextQuestion
+  onNextQuestion,
+  isValidating = false
 }: FillBlankQuestionProps) {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [localHasAnswered, setLocalHasAnswered] = useState(false);
@@ -51,11 +47,10 @@ export function FillBlankQuestion({
   };
   
   const handleSubmit = () => {
-    if (localHasAnswered) return;
+    if (localHasAnswered || isValidating) return;
     
-    const { overallMatch } = fuzzyMatchMultiple(userAnswers, correctAnswers, 0.75);
     setLocalHasAnswered(true);
-    onAnswer(overallMatch, userAnswers);
+    onAnswer(userAnswers);
   };
   
   const handleKeyPress = (e: React.KeyboardEvent, index: number) => {
@@ -71,20 +66,6 @@ export function FillBlankQuestion({
         }
       }
     }
-  };
-  
-  const getInputFeedback = (index: number) => {
-    if (!localHasAnswered || !feedback) return null;
-    
-    const { matches, details } = fuzzyMatchMultiple(userAnswers, correctAnswers, 0.75);
-    const isCorrect = matches[index];
-    const similarity = details[index]?.similarity || 0;
-    
-    return {
-      isCorrect,
-      similarity,
-      correctAnswer: correctAnswers[index]
-    };
   };
   
   const allFieldsFilled = userAnswers.every(answer => answer.trim() !== '');
@@ -107,33 +88,12 @@ export function FillBlankQuestion({
                           value={userAnswers[index] || ''}
                           onChange={(e) => handleInputChange(index, e.target.value)}
                           onKeyPress={(e) => handleKeyPress(e, index)}
-                          disabled={localHasAnswered}
-                          className={cn(
-                            "inline-block w-24 h-8 text-center text-sm border-2",
-                            localHasAnswered && getInputFeedback(index) && (
-                              getInputFeedback(index)!.isCorrect 
-                                ? "border-green-500 bg-green-50 text-green-700" 
-                                : "border-red-500 bg-red-50 text-red-700"
-                            )
-                          )}
+                          disabled={localHasAnswered || isValidating}
+                          className="inline-block w-24 h-8 text-center text-sm border-2"
                           placeholder="..."
                           autoComplete="off"
                         />
-                        {localHasAnswered && getInputFeedback(index) && (
-                          <span className="inline-block">
-                            {getInputFeedback(index)!.isCorrect ? (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <XCircle className="h-4 w-4 text-red-600" />
-                            )}
-                          </span>
-                        )}
                       </div>
-                      {localHasAnswered && getInputFeedback(index) && !getInputFeedback(index)!.isCorrect && (
-                        <div className="text-xs text-green-700 font-medium bg-green-100 px-2 py-1 rounded border border-green-300">
-                          ✓ {correctAnswers[index]}
-                        </div>
-                      )}
                     </div>
                   </span>
                 )}
@@ -147,15 +107,16 @@ export function FillBlankQuestion({
               <>
                 <Button
                   onClick={handleSubmit}
-                  disabled={!allFieldsFilled}
+                  disabled={!allFieldsFilled || isValidating}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  Υποβολή Απάντησης
+                  {isValidating ? 'Επεξεργασία...' : 'Υποβολή Απάντησης'}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setShowHint(!showHint)}
                   className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+                  disabled={isValidating}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
                   {showHint ? 'Απόκρυψη' : 'Υπόδειξη'}
@@ -178,12 +139,12 @@ export function FillBlankQuestion({
           {localHasAnswered && feedback && (
             <div className={cn(
               "border rounded-md p-4",
-              feedback.isCorrect 
+              feedback.includes('Σωστά') || feedback.includes('Σωστό')
                 ? "bg-green-50 border-green-200" 
                 : "bg-red-50 border-red-200"
             )}>
               <div className="flex items-center gap-2 mb-2">
-                {feedback.isCorrect ? (
+                {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
                   <>
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <Badge variant="default" className="bg-green-600">
@@ -200,16 +161,13 @@ export function FillBlankQuestion({
                 )}
               </div>
               
-              {!feedback.isCorrect && (
-                <div className="mb-3">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Σωστές απαντήσεις:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {correctAnswers.map((answer, index) => (
-                      <Badge key={index} variant="outline" className="text-green-700 border-green-300">
-                        {index + 1}. {answer}
-                      </Badge>
-                    ))}
-                  </div>
+              <p className="text-sm text-gray-700 mb-3">{feedback}</p>
+              
+              {explanation && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    <strong>Εξήγηση:</strong> {explanation}
+                  </p>
                 </div>
               )}
               

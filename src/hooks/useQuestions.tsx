@@ -26,8 +26,9 @@ export function useQuestions() {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
+      // Use secure view instead of direct table access
       const { data, error } = await supabase
-        .from('questions')
+        .from('questions_public')
         .select('*')
         .order('created_at', { ascending: false });
 
