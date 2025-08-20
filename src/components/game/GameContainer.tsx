@@ -14,6 +14,7 @@ export interface PlayerData {
 
 export interface GameState {
   currentPosition: number;
+  currentLevelProgress: number;
   correctAnswers: number;
   totalQuestions: number;
   usedQuestions: Set<string>;
@@ -24,6 +25,7 @@ export const GameContainer = () => {
   const [playerData, setPlayerData] = useState<PlayerData>({ name: '' });
   const [gameState, setGameState] = useState<GameState>({
     currentPosition: 1,
+    currentLevelProgress: 0,
     correctAnswers: 0,
     totalQuestions: 0,
     usedQuestions: new Set()
@@ -44,6 +46,7 @@ export const GameContainer = () => {
   const resetGame = () => {
     setGameState({
       currentPosition: 1,
+      currentLevelProgress: 0,
       correctAnswers: 0,
       totalQuestions: 0,
       usedQuestions: new Set()

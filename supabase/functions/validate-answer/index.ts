@@ -102,13 +102,48 @@ serve(async (req) => {
 
     console.log('Validation result:', { isCorrect, similarity, correctAnswer });
 
+    // Create response with partial credit data for fill-in-the-blank
+    const response: any = {
+      isCorrect,
+      similarity,
+      correctAnswer,
+      feedback: isCorrect ? 'Σωστό!' : `Λάθος. Η σωστή απάντηση είναι: ${correctAnswer}`
+    };
+
+    // Add per-blank results for fill-in-the-blank questions
+    if (questionType === 'fill-in-the-blank') {
+      const perBlankResults: boolean[] = [];
+      let correctCount = 0;
+      
+      if (userAnswers && exercise && exercise.answers) {
+        const correctAnswers = exercise.answers as string[];
+        
+        for (let i = 0; i < correctAnswers.length; i++) {
+          const userAns = (userAnswers[i] || '').toLowerCase().trim();
+          const correctAns = correctAnswers[i].toLowerCase().trim();
+          
+          let isBlankCorrect = false;
+          if (userAns === correctAns) {
+            isBlankCorrect = true;
+          } else if (userAns.includes(correctAns) || correctAns.includes(userAns)) {
+            const lengthRatio = Math.min(userAns.length, correctAns.length) / Math.max(userAns.length, correctAns.length);
+            if (lengthRatio > 0.7) {
+              isBlankCorrect = true;
+            }
+          }
+          
+          perBlankResults.push(isBlankCorrect);
+          if (isBlankCorrect) correctCount++;
+        }
+        
+        response.perBlankResults = perBlankResults;
+        response.correctCount = correctCount;
+        response.totalBlanks = correctAnswers.length;
+      }
+    }
+
     return new Response(
-      JSON.stringify({
-        isCorrect,
-        similarity,
-        correctAnswer,
-        feedback: isCorrect ? 'Σωστό!' : `Λάθος. Η σωστή απάντηση είναι: ${correctAnswer}`
-      }),
+      JSON.stringify(response),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

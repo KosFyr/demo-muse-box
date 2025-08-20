@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
-import { VerticalGameBoard } from './VerticalGameBoard';
+import { IcebergGameBoard } from './IcebergGameBoard';
 import { FillBlankQuestion } from './FillBlankQuestion';
 import { useQuestions, Question } from '@/hooks/useQuestions';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,13 +19,15 @@ interface GameScreenProps {
 export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd }: GameScreenProps) => {
   const { questions, loading, error, refetch } = useQuestions();
   const { user } = useAuth();
-  const { validateAnswer, validating } = useAnswerValidation();
+  const { validateAnswer, validating, lastResult } = useAnswerValidation();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [feedback, setFeedback] = useState<string>('');
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
   const [hasAnswered, setHasAnswered] = useState(false);
+  const [isClimbing, setIsClimbing] = useState(false);
+  const [isSlipping, setIsSlipping] = useState(false);
 
   useEffect(() => {
     // Load the first question only when questions are ready and none is loaded yet
@@ -66,8 +68,6 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
         userAnswers
       );
       
-      const isCorrect = result.isCorrect;
-      
       if (currentQuestion.question_type !== 'fill-in-the-blank') {
         setSelectedAnswer(answer as string);
       }
@@ -80,15 +80,57 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       const newUsedQuestions = new Set(gameState.usedQuestions);
       newUsedQuestions.add(currentQuestion.id);
 
-      // Update game state
-      const newState = {
-        usedQuestions: newUsedQuestions,
-        totalQuestions: gameState.totalQuestions + 1,
-        correctAnswers: isCorrect ? gameState.correctAnswers + 1 : gameState.correctAnswers,
-        currentPosition: isCorrect 
-          ? Math.min(15, gameState.currentPosition + 2)
-          : Math.max(1, gameState.currentPosition - 1)
-      };
+      let newState;
+
+      if (currentQuestion.question_type === 'fill-in-the-blank') {
+        // Partial credit system for fill-in-the-blank
+        const correctCount = result.correctCount || 0;
+        const totalBlanks = result.totalBlanks || 1;
+        const progressIncrease = correctCount / totalBlanks;
+        
+        let newPosition = gameState.currentPosition;
+        let newLevelProgress = gameState.currentLevelProgress + progressIncrease;
+        
+        // If we've filled the current level, advance to next level
+        if (newLevelProgress >= 1) {
+          newPosition = Math.min(15, newPosition + Math.floor(newLevelProgress));
+          newLevelProgress = newLevelProgress % 1;
+        }
+        
+        setIsClimbing(progressIncrease > 0);
+        
+        newState = {
+          usedQuestions: newUsedQuestions,
+          totalQuestions: gameState.totalQuestions + 1,
+          correctAnswers: result.isCorrect ? gameState.correctAnswers + 1 : gameState.correctAnswers,
+          currentPosition: newPosition,
+          currentLevelProgress: newLevelProgress
+        };
+      } else {
+        // All-or-nothing for other question types
+        if (result.isCorrect) {
+          setIsClimbing(true);
+          newState = {
+            usedQuestions: newUsedQuestions,
+            totalQuestions: gameState.totalQuestions + 1,
+            correctAnswers: gameState.correctAnswers + 1,
+            currentPosition: Math.min(15, gameState.currentPosition + 1),
+            currentLevelProgress: 0
+          };
+        } else {
+          // Just slip animation, no progress loss
+          setIsSlipping(true);
+          setTimeout(() => setIsSlipping(false), 1000);
+          
+          newState = {
+            usedQuestions: newUsedQuestions,
+            totalQuestions: gameState.totalQuestions + 1,
+            correctAnswers: gameState.correctAnswers,
+            currentPosition: gameState.currentPosition,
+            currentLevelProgress: gameState.currentLevelProgress
+          };
+        }
+      }
 
       onGameStateUpdate(newState);
 
@@ -96,6 +138,10 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       if (user) {
         savePlayerProgress(newState);
       }
+      
+      // Reset climbing animation
+      setTimeout(() => setIsClimbing(false), 1000);
+      
     } catch (error) {
       console.error('Error validating answer:', error);
       setFeedback('Σφάλμα επικύρωσης απάντησης');
@@ -165,10 +211,11 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
   return (
     <div className="space-y-6">
       {/* Game Board */}
-      <VerticalGameBoard
-        currentPosition={gameState.currentPosition}
+      <IcebergGameBoard
+        effectivePosition={gameState.currentPosition + gameState.currentLevelProgress}
         playerData={playerData}
-        isMoving={isAnswering}
+        isClimbing={isClimbing}
+        isSlipping={isSlipping}
       />
 
       {/* Score Display */}
@@ -177,6 +224,9 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
           Επίπεδο {gameState.currentPosition} από 15
         </div>
         <div className="text-lg">
+          Βάση: {(gameState.currentPosition + gameState.currentLevelProgress).toFixed(1)}/15
+        </div>
+        <div className="text-sm">
           Σωστές: {gameState.correctAnswers} | Συνολικές: {gameState.totalQuestions}
         </div>
       </div>
@@ -191,6 +241,9 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
           hasAnswered={showFeedback}
           onNextQuestion={showFeedback ? handleNextQuestion : undefined}
           isValidating={validating}
+          perBlankResults={hasAnswered ? lastResult?.perBlankResults : undefined}
+          correctCount={hasAnswered ? lastResult?.correctCount : undefined}
+          totalBlanks={hasAnswered ? lastResult?.totalBlanks : undefined}
         />
       ) : (
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

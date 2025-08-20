@@ -6,10 +6,14 @@ export interface ValidationResult {
   similarity: number;
   correctAnswer: string;
   feedback: string;
+  perBlankResults?: boolean[];
+  correctCount?: number;
+  totalBlanks?: number;
 }
 
 export function useAnswerValidation() {
   const [validating, setValidating] = useState(false);
+  const [lastResult, setLastResult] = useState<ValidationResult | null>(null);
 
   const validateAnswer = async (
     questionId: string,
@@ -31,7 +35,9 @@ export function useAnswerValidation() {
 
       if (error) throw error;
 
-      return data as ValidationResult;
+      const result = data as ValidationResult;
+      setLastResult(result);
+      return result;
     } catch (error: any) {
       console.error('Answer validation error:', error);
       return {
@@ -45,5 +51,5 @@ export function useAnswerValidation() {
     }
   };
 
-  return { validateAnswer, validating };
+  return { validateAnswer, validating, lastResult };
 }

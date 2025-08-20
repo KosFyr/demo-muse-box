@@ -14,6 +14,9 @@ interface FillBlankQuestionProps {
   hasAnswered?: boolean;
   onNextQuestion?: () => void;
   isValidating?: boolean;
+  perBlankResults?: boolean[];
+  correctCount?: number;
+  totalBlanks?: number;
 }
 
 export function FillBlankQuestion({
@@ -23,7 +26,10 @@ export function FillBlankQuestion({
   feedback,
   hasAnswered = false,
   onNextQuestion,
-  isValidating = false
+  isValidating = false,
+  perBlankResults,
+  correctCount,
+  totalBlanks
 }: FillBlankQuestionProps) {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [localHasAnswered, setLocalHasAnswered] = useState(false);
@@ -89,10 +95,19 @@ export function FillBlankQuestion({
                           onChange={(e) => handleInputChange(index, e.target.value)}
                           onKeyPress={(e) => handleKeyPress(e, index)}
                           disabled={localHasAnswered || isValidating}
-                          className="inline-block w-24 h-8 text-center text-sm border-2"
+                          className={cn(
+                            "inline-block w-24 h-8 text-center text-sm border-2",
+                            localHasAnswered && perBlankResults ? 
+                              (perBlankResults[index] ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50") :
+                              ""
+                          )}
                           placeholder="..."
                           autoComplete="off"
                         />
+                        {/* Ice pick indicator for correct answers */}
+                        {localHasAnswered && perBlankResults && perBlankResults[index] && (
+                          <span className="ml-1 text-orange-500">⛏️</span>
+                        )}
                       </div>
                     </div>
                   </span>
@@ -155,11 +170,26 @@ export function FillBlankQuestion({
                   <>
                     <XCircle className="h-5 w-5 text-red-600" />
                     <Badge variant="destructive">
-                      Λανθασμένη απάντηση
+                      Μερική απάντηση
                     </Badge>
                   </>
                 )}
               </div>
+              
+              {/* Partial credit display */}
+              {typeof correctCount === 'number' && typeof totalBlanks === 'number' && (
+                <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-800 font-medium">
+                    ⛏️ Καρφώθηκαν {correctCount}/{totalBlanks} αγκίστρια
+                  </p>
+                  <div className="w-full bg-blue-200 rounded-full h-2 mt-1">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(correctCount / totalBlanks) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               
               <p className="text-sm text-gray-700 mb-3">{feedback}</p>
               
