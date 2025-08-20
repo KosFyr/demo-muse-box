@@ -9,6 +9,7 @@ export interface ValidationResult {
   perBlankResults?: boolean[];
   correctCount?: number;
   totalBlanks?: number;
+  correctAnswers?: string[];
 }
 
 export function useAnswerValidation() {

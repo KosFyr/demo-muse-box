@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface FillBlankQuestionProps {
   questionText: string;
-  explanation?: string;
+  explanation?: string; // will not be rendered
   onAnswer: (userAnswers: string[]) => void;
   feedback?: string;
   hasAnswered?: boolean;
@@ -17,6 +17,7 @@ interface FillBlankQuestionProps {
   perBlankResults?: boolean[];
   correctCount?: number;
   totalBlanks?: number;
+  correctAnswers?: string[];
 }
 
 export function FillBlankQuestion({
@@ -29,7 +30,8 @@ export function FillBlankQuestion({
   isValidating = false,
   perBlankResults,
   correctCount,
-  totalBlanks
+  totalBlanks,
+  correctAnswers
 }: FillBlankQuestionProps) {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [localHasAnswered, setLocalHasAnswered] = useState(false);
@@ -193,13 +195,6 @@ export function FillBlankQuestion({
               
               <p className="text-sm text-gray-700 mb-3">{feedback}</p>
               
-              {explanation && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    <strong>Εξήγηση:</strong> {explanation}
-                  </p>
-                </div>
-              )}
               
               {onNextQuestion && (
                 <div className="mt-4 text-center">

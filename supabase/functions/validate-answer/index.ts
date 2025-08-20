@@ -34,6 +34,12 @@ serve(async (req) => {
     let isCorrect = false;
     let similarity = 0;
 
+    // Optional partial credit details for fill-in-the-blank
+    let perBlankResults: boolean[] | undefined;
+    let correctCountDetail: number | undefined;
+    let totalBlanksDetail: number | undefined;
+    let correctAnswersArr: string[] | undefined;
+
     if (questionType === 'fill-in-the-blank') {
       // Get correct answers from fill_blank_exercises table
       const { data: exercise, error } = await supabase
@@ -48,29 +54,38 @@ serve(async (req) => {
       }
 
       const correctAnswers = exercise.answers as string[];
+      correctAnswersArr = correctAnswers;
       correctAnswer = correctAnswers.join(', ');
 
       if (userAnswers && userAnswers.length === correctAnswers.length) {
-        // Validate each blank with fuzzy matching
+        // Validate each blank with fuzzy matching and collect per-blank correctness
         let correctCount = 0;
         let totalSimilarity = 0;
+        const blanks: boolean[] = [];
 
         for (let i = 0; i < userAnswers.length; i++) {
           const userAns = (userAnswers[i] || '').toLowerCase().trim();
           const correctAns = correctAnswers[i].toLowerCase().trim();
           
           // Simple fuzzy matching - exact match or very close
+          let isBlankCorrect = false;
           if (userAns === correctAns) {
-            correctCount++;
+            isBlankCorrect = true;
             totalSimilarity += 1;
           } else if (userAns.includes(correctAns) || correctAns.includes(userAns)) {
             const lengthRatio = Math.min(userAns.length, correctAns.length) / Math.max(userAns.length, correctAns.length);
             if (lengthRatio > 0.7) {
-              correctCount++;
+              isBlankCorrect = true;
               totalSimilarity += lengthRatio;
             }
           }
+          blanks.push(isBlankCorrect);
+          if (isBlankCorrect) correctCount++;
         }
+
+        perBlankResults = blanks;
+        correctCountDetail = correctCount;
+        totalBlanksDetail = correctAnswers.length;
 
         isCorrect = correctCount === correctAnswers.length;
         similarity = totalSimilarity / correctAnswers.length;
@@ -110,36 +125,11 @@ serve(async (req) => {
       feedback: isCorrect ? 'Σωστό!' : `Λάθος. Η σωστή απάντηση είναι: ${correctAnswer}`
     };
 
-    // Add per-blank results for fill-in-the-blank questions
     if (questionType === 'fill-in-the-blank') {
-      const perBlankResults: boolean[] = [];
-      let correctCount = 0;
-      
-      if (userAnswers && exercise && exercise.answers) {
-        const correctAnswers = exercise.answers as string[];
-        
-        for (let i = 0; i < correctAnswers.length; i++) {
-          const userAns = (userAnswers[i] || '').toLowerCase().trim();
-          const correctAns = correctAnswers[i].toLowerCase().trim();
-          
-          let isBlankCorrect = false;
-          if (userAns === correctAns) {
-            isBlankCorrect = true;
-          } else if (userAns.includes(correctAns) || correctAns.includes(userAns)) {
-            const lengthRatio = Math.min(userAns.length, correctAns.length) / Math.max(userAns.length, correctAns.length);
-            if (lengthRatio > 0.7) {
-              isBlankCorrect = true;
-            }
-          }
-          
-          perBlankResults.push(isBlankCorrect);
-          if (isBlankCorrect) correctCount++;
-        }
-        
-        response.perBlankResults = perBlankResults;
-        response.correctCount = correctCount;
-        response.totalBlanks = correctAnswers.length;
-      }
+      response.perBlankResults = perBlankResults || [];
+      response.correctCount = correctCountDetail ?? 0;
+      response.totalBlanks = totalBlanksDetail ?? (correctAnswersArr?.length || 0);
+      response.correctAnswers = correctAnswersArr || [];
     }
 
     return new Response(

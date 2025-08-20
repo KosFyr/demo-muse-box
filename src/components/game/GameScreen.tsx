@@ -235,7 +235,6 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       {currentQuestion.question_type === 'fill-in-the-blank' ? (
         <FillBlankQuestion
           questionText={currentQuestion.question_text}
-          explanation={currentQuestion.explanation}
           onAnswer={(userAnswers) => handleAnswer('', userAnswers)}
           feedback={showFeedback ? feedback : undefined}
           hasAnswered={showFeedback}
@@ -244,6 +243,7 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
           perBlankResults={hasAnswered ? lastResult?.perBlankResults : undefined}
           correctCount={hasAnswered ? lastResult?.correctCount : undefined}
           totalBlanks={hasAnswered ? lastResult?.totalBlanks : undefined}
+          correctAnswers={hasAnswered ? lastResult?.correctAnswers : undefined}
         />
       ) : (
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
