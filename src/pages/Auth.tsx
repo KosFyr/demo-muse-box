@@ -17,45 +17,44 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+
   useEffect(() => {
-    // Check if user is already logged in or if this is a password reset
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Check if this is a password reset (recovery) URL
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const type = hashParams.get('type');
-      
-      if (type === 'recovery' && accessToken) {
-        // This is a password reset, show password reset form
-        setIsForgotPassword(false);
-        setIsLogin(false); // Show as signup form but we'll handle it as password reset
-        toast({
-          title: "Επαναφορά Κωδικού",
-          description: "Εισάγετε τον νέο σας κωδικό",
-        });
-        return;
-      }
-      
-      if (session) {
-        navigate('/');
-      }
-    };
-    checkUser();
-  }, [navigate, toast]);
+    // Check if this is a password reset (recovery) URL
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (type === 'recovery' && accessToken) {
+      // This is a password reset, show password reset form
+      setIsPasswordReset(true);
+      setIsForgotPassword(false);
+      setIsLogin(false);
+      toast({
+        title: "Επαναφορά Κωδικού",
+        description: "Εισάγετε τον νέο σας κωδικό",
+      });
+      return;
+    }
+    
+    // Only check session if this is NOT a password reset
+    if (!isPasswordReset) {
+      const checkUser = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate('/');
+        }
+      };
+      checkUser();
+    }
+  }, [navigate, toast, isPasswordReset]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Check if this is a password reset scenario
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const type = hashParams.get('type');
-      
-      if (type === 'recovery' && accessToken && !isLogin && !isForgotPassword) {
+      if (isPasswordReset) {
         // This is a password reset, update the password
         const { error } = await supabase.auth.updateUser({
           password: password
@@ -70,6 +69,7 @@ export default function Auth() {
         
         // Clear the URL hash and redirect
         window.location.hash = '';
+        setIsPasswordReset(false);
         navigate('/');
         return;
       }
@@ -137,14 +137,14 @@ export default function Auth() {
       <Card className="w-full max-w-md bg-white/10 backdrop-blur-md border-white/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">
-            {isForgotPassword ? 'Επαναφορά Κωδικού' : 
-             (new URLSearchParams(window.location.hash.substring(1)).get('type') === 'recovery' && !isLogin ? 'Νέος Κωδικός' : 
+            {isPasswordReset ? 'Νέος Κωδικός' : 
+             (isForgotPassword ? 'Επαναφορά Κωδικού' : 
               (isLogin ? 'Είσοδος' : 'Εγγραφή'))}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && !isForgotPassword && (
+            {!isLogin && !isForgotPassword && !isPasswordReset && (
               <div className="space-y-2">
                 <Label htmlFor="displayName" className="text-white">
                   Όνομα χρήστη
@@ -161,20 +161,22 @@ export default function Auth() {
               </div>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                placeholder="Το email σου"
-              />
-            </div>
+            {!isPasswordReset && (
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  placeholder="Το email σου"
+                />
+              </div>
+            )}
             
             {!isForgotPassword && (
               <div className="space-y-2">
@@ -199,15 +201,15 @@ export default function Auth() {
               className="w-full bg-white text-blue-600 hover:bg-white/90 font-semibold"
             >
               {loading ? 'Φόρτωση...' : (
-                isForgotPassword ? 'Στείλε Email Επαναφοράς' : 
-                (new URLSearchParams(window.location.hash.substring(1)).get('type') === 'recovery' && !isLogin ? 'Αλλαγή Κωδικού' :
+                isPasswordReset ? 'Αλλαγή Κωδικού' :
+                (isForgotPassword ? 'Στείλε Email Επαναφοράς' : 
                  (isLogin ? 'Είσοδος' : 'Εγγραφή'))
               )}
             </Button>
           </form>
           
           <div className="mt-4 text-center space-y-2">
-            {!isForgotPassword && isLogin && (
+            {!isForgotPassword && !isPasswordReset && isLogin && (
               <button
                 onClick={() => {
                   setIsForgotPassword(true);
@@ -219,26 +221,28 @@ export default function Auth() {
               </button>
             )}
             
-            <button
-              onClick={() => {
-                if (isForgotPassword) {
-                  setIsForgotPassword(false);
-                  setIsLogin(true);
-                } else {
-                  setIsLogin(!isLogin);
-                }
-                setEmail('');
-                setPassword('');
-                setDisplayName('');
-              }}
-              className="text-white/80 hover:text-white underline"
-            >
-              {isForgotPassword ? 'Πίσω στην είσοδο' : (
-                isLogin 
-                  ? 'Δεν έχεις λογαριασμό; Κάνε εγγραφή' 
-                  : 'Έχεις ήδη λογαριασμό; Κάνε είσοδος'
-              )}
-            </button>
+            {!isPasswordReset && (
+              <button
+                onClick={() => {
+                  if (isForgotPassword) {
+                    setIsForgotPassword(false);
+                    setIsLogin(true);
+                  } else {
+                    setIsLogin(!isLogin);
+                  }
+                  setEmail('');
+                  setPassword('');
+                  setDisplayName('');
+                }}
+                className="text-white/80 hover:text-white underline"
+              >
+                {isForgotPassword ? 'Πίσω στην είσοδο' : (
+                  isLogin 
+                    ? 'Δεν έχεις λογαριασμό; Κάνε εγγραφή' 
+                    : 'Έχεις ήδη λογαριασμό; Κάνε είσοδος'
+                )}
+              </button>
+            )}
           </div>
         </CardContent>
       </Card>
