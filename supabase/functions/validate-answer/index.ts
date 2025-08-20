@@ -45,36 +45,61 @@ serve(async (req) => {
     if (questionType === 'fill-in-the-blank') {
       console.log('Processing fill-in-the-blank question');
       
-      // Get correct answers from fill_blank_exercises table
-      const { data: exercise, error } = await supabase
+      let correctAnswers: string[] | null = null;
+
+      // Try fill_blank_exercises first
+      const { data: exercise, error: exErr } = await supabase
         .from('fill_blank_exercises')
         .select('answers')
         .eq('id', questionId)
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching fill blank exercise:', error);
-        throw new Error('Question not found');
+      if (exErr) console.warn('fill_blank_exercises lookup failed:', exErr);
+      if (exercise && Array.isArray(exercise.answers)) {
+        correctAnswers = exercise.answers as string[];
       }
 
-      console.log('Found exercise:', exercise);
-      
-      const correctAnswers = exercise.answers as string[];
-      correctAnswersArr = correctAnswers;
-      correctAnswer = correctAnswers.join(', ');
+      // Fallback to questions.correct_answer if needed
+      if (!correctAnswers) {
+        const { data: qRow, error: qErr } = await supabase
+          .from('questions')
+          .select('correct_answer')
+          .eq('id', questionId)
+          .maybeSingle();
+        if (qErr) console.warn('questions fallback lookup failed:', qErr);
+        if (qRow && qRow.correct_answer) {
+          try {
+            const parsed = JSON.parse(qRow.correct_answer);
+            if (Array.isArray(parsed)) correctAnswers = parsed as string[];
+          } catch (_) {
+            const raw = String(qRow.correct_answer);
+            if (raw.includes('|')) correctAnswers = raw.split('|');
+            else correctAnswers = raw.split(',');
+          }
+        }
+      }
+
+      if (!correctAnswers || correctAnswers.length === 0) {
+        console.error('No correct answers found for FITB question', { questionId });
+        throw new Error('Correct answers not found');
+      }
+
+      correctAnswersArr = correctAnswers.map((s) => String(s));
+      correctAnswer = correctAnswersArr.join(', ');
 
       console.log('User answers:', userAnswers);
-      console.log('Correct answers:', correctAnswers);
+      console.log('Correct answers:', correctAnswersArr);
 
-      if (userAnswers && userAnswers.length === correctAnswers.length) {
+      if (userAnswers && userAnswers.length > 0) {
         // Validate each blank with fuzzy matching and collect per-blank correctness
         let correctCount = 0;
         let totalSimilarity = 0;
         const blanks: boolean[] = [];
+        const len = Math.min(userAnswers.length, correctAnswersArr.length);
 
-        for (let i = 0; i < userAnswers.length; i++) {
+        for (let i = 0; i < len; i++) {
           const userAns = (userAnswers[i] || '').toLowerCase().trim();
-          const correctAns = correctAnswers[i].toLowerCase().trim();
+          const correctAns = correctAnswersArr[i].toLowerCase().trim();
           
           console.log(`Comparing blank ${i}: "${userAns}" vs "${correctAns}"`);
           
@@ -84,7 +109,7 @@ serve(async (req) => {
             isBlankCorrect = true;
             totalSimilarity += 1;
             console.log(`Blank ${i}: Exact match`);
-          } else if (userAns.includes(correctAns) || correctAns.includes(userAns)) {
+          } else if (userAns && (userAns.includes(correctAns) || correctAns.includes(userAns))) {
             const lengthRatio = Math.min(userAns.length, correctAns.length) / Math.max(userAns.length, correctAns.length);
             if (lengthRatio > 0.7) {
               isBlankCorrect = true;
@@ -101,22 +126,29 @@ serve(async (req) => {
           if (isBlankCorrect) correctCount++;
         }
 
+        // If user provided fewer answers than blanks, pad remaining as false
+        while (blanks.length < correctAnswersArr.length) blanks.push(false);
+
         perBlankResults = blanks;
         correctCountDetail = correctCount;
-        totalBlanksDetail = correctAnswers.length;
+        totalBlanksDetail = correctAnswersArr.length;
 
-        isCorrect = correctCount === correctAnswers.length;
-        similarity = totalSimilarity / correctAnswers.length;
+        isCorrect = correctCount === correctAnswersArr.length;
+        similarity = totalBlanksDetail ? totalSimilarity / totalBlanksDetail : 0;
         
         console.log('Final FITB results:', { 
           isCorrect, 
           similarity, 
           correctCount, 
-          totalBlanks: correctAnswers.length, 
+          totalBlanks: correctAnswersArr.length, 
           perBlankResults: blanks 
         });
       } else {
-        console.log('Invalid user answers length or missing answers');
+        console.log('No user answers provided for FITB');
+        // No answers: mark all false for clarity
+        perBlankResults = new Array(correctAnswersArr.length).fill(false);
+        correctCountDetail = 0;
+        totalBlanksDetail = correctAnswersArr.length;
       }
     } else {
       // Get correct answer from questions table
@@ -150,7 +182,9 @@ serve(async (req) => {
       isCorrect,
       similarity,
       correctAnswer,
-      feedback: isCorrect ? 'Σωστό!' : `Λάθος. Η σωστή απάντηση είναι: ${correctAnswer}`
+      feedback: questionType === 'fill-in-the-blank'
+        ? (isCorrect ? 'Σωστό!' : 'Μερική απάντηση')
+        : (isCorrect ? 'Σωστό!' : 'Λάθος.')
     };
 
     if (questionType === 'fill-in-the-blank') {
