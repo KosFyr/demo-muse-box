@@ -109,8 +109,8 @@ export const cropFaceFromImage = async (imageElement: HTMLImageElement): Promise
     if (!ctx) throw new Error('Could not get canvas context');
     
     // Better face detection area - focus more on upper center for face
-    const faceAreaRatio = 0.6; // Use 60% of the image
-    const bigHeadSize = 120; // Size for big head effect
+    const faceAreaRatio = 0.7; // Use 70% of the image for better crop
+    const bigHeadSize = 180; // Larger size for higher resolution
     
     canvas.width = bigHeadSize;
     canvas.height = bigHeadSize;
@@ -118,9 +118,9 @@ export const cropFaceFromImage = async (imageElement: HTMLImageElement): Promise
     // Calculate crop area more precisely for face detection
     const sourceSize = Math.min(imageElement.naturalWidth, imageElement.naturalHeight) * faceAreaRatio;
     
-    // Center horizontally, but focus on upper 25% of the image for better face capture
+    // Center horizontally, but focus on upper part of the image for better face capture
     const sx = (imageElement.naturalWidth - sourceSize) / 2;
-    const sy = Math.max(0, imageElement.naturalHeight * 0.15); // Start from 15% down from top
+    const sy = Math.max(0, imageElement.naturalHeight * 0.1); // Start from 10% down from top
     
     // Ensure we don't crop beyond image boundaries
     const actualSourceSize = Math.min(
@@ -141,6 +141,18 @@ export const cropFaceFromImage = async (imageElement: HTMLImageElement): Promise
     ctx.beginPath();
     ctx.arc(bigHeadSize / 2, bigHeadSize / 2, bigHeadSize / 2 - 2, 0, Math.PI * 2);
     ctx.fill();
+    
+    // Add feathered edge for natural look
+    ctx.globalCompositeOperation = 'destination-in';
+    const centerX = bigHeadSize / 2;
+    const centerY = bigHeadSize / 2;
+    const innerRadius = bigHeadSize / 2 * 0.85;
+    const outerRadius = bigHeadSize / 2;
+    const gradient = ctx.createRadialGradient(centerX, centerY, innerRadius, centerX, centerY, outerRadius);
+    gradient.addColorStop(0, 'rgba(0,0,0,1)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, bigHeadSize, bigHeadSize);
     
     return new Promise((resolve, reject) => {
       canvas.toBlob(

@@ -160,52 +160,79 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
         {/* Player avatar */}
         {currentPlatform && (
           <g
-            transform={`translate(${currentPlatform.x}, ${currentPlatform.y - 40})`}
+            transform={`translate(${currentPlatform.x}, ${currentPlatform.y - 50})`}
             className={isMoving ? 'transition-transform duration-1000' : ''}
           >
             {/* Parachute when falling */}
             {showParachute && (
-              <g transform="translate(0, -30)">
+              <g transform="translate(0, -35)">
                 <path
                   d="M -20,-10 Q 0,-30 20,-10"
                   fill="#FF6B6B"
                   stroke="#FF4757"
                   strokeWidth="1"
                 />
-                <line x1="0" y1="-10" x2="0" y2="20" stroke="#333" strokeWidth="1" />
+                <line x1="0" y1="-10" x2="0" y2="25" stroke="#333" strokeWidth="1" />
               </g>
             )}
             
             {/* Big Head Stick Figure */}
             <g>
-              {/* Big Head with player face */}
-              <circle cx="0" cy="0" r="18" fill="white" stroke="#333" strokeWidth="2" />
+              <defs>
+                <clipPath id="playerHeadClip">
+                  <circle cx="0" cy="0" r="24" />
+                </clipPath>
+                <filter id="playerHeadShadow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="1.5" floodOpacity="0.4" />
+                </filter>
+              </defs>
               
-              {/* Player face overlay - bigger */}
-              {playerData.avatarImageUrl && (
-                <foreignObject x="-15" y="-15" width="30" height="30">
-                  <div 
-                    className="w-full h-full rounded-full overflow-hidden"
-                    style={{
-                      backgroundImage: `url(${playerData.avatarImageUrl})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
+              {/* Head with shadow and outline */}
+              <g filter="url(#playerHeadShadow)">
+                {/* Player face image */}
+                {playerData.avatarImageUrl && (
+                  <image 
+                    href={playerData.avatarImageUrl} 
+                    x="-24" y="-24" 
+                    width="48" height="48" 
+                    clipPath="url(#playerHeadClip)"
+                    preserveAspectRatio="xMidYMid slice"
                   />
-                </foreignObject>
+                )}
+                {/* Circle outline */}
+                <circle 
+                  cx="0" cy="0" r="24" 
+                  fill={playerData.avatarImageUrl ? "transparent" : "white"} 
+                  stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} 
+                  strokeWidth="2.5" 
+                />
+              </g>
+              
+              {/* Neck connection */}
+              <line x1="0" y1="24" x2="0" y2="30" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2" />
+              
+              {/* Head bobbing animation when walking */}
+              {isWalking && (
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  values="0,0; 0,-2; 0,0"
+                  dur="0.6s"
+                  repeatCount="indefinite"
+                />
               )}
               
               {/* Thin Body - with walking animation */}
-              <line x1="0" y1="18" x2="0" y2="40" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2" />
+              <line x1="0" y1="30" x2="0" y2="52" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2" />
               
-               {/* Arms - with walking swing */}
+              {/* Arms - with walking swing */}
               <line 
-                x1="0" y1="28" x2="-10" y2="35" 
+                x1="0" y1="40" x2="-12" y2="47" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
                 className={isWalking ? 'animate-armSwing' : ''}
               />
               <line 
-                x1="0" y1="28" x2="10" y2="35" 
+                x1="0" y1="40" x2="12" y2="47" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
                 className={isWalking ? 'animate-armSwing' : ''}
                 style={isWalking ? { animationDirection: 'reverse' } : {}}
@@ -213,12 +240,12 @@ export const VerticalGameBoard = ({ currentPosition, playerData, isMoving }: Ver
               
               {/* Legs - with walking motion */}
               <line 
-                x1="0" y1="40" x2="-8" y2="50" 
+                x1="0" y1="52" x2="-10" y2="65" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
                 className={isWalking ? 'animate-walkStep' : ''}
               />
               <line 
-                x1="0" y1="40" x2="8" y2="50" 
+                x1="0" y1="52" x2="10" y2="65" 
                 stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="1.5"
                 className={isWalking ? 'animate-walkStep' : ''}
                 style={isWalking ? { animationDirection: 'reverse' } : {}}

@@ -52,39 +52,60 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
       <div className="flex justify-center">
         <div className="relative">
           {/* Stick figure with face */}
-          <svg viewBox="0 0 100 130" className="w-24 h-32">
-            {/* Head */}
-            <circle cx="50" cy="20" r="15" fill="white" stroke="#333" strokeWidth="2"/>
+          <svg viewBox="0 0 100 130" className="w-28 h-36">
+            <defs>
+              <clipPath id="endScreenHeadClip">
+                <circle cx="50" cy="20" r="18" />
+              </clipPath>
+              <filter id="endScreenHeadShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3" />
+              </filter>
+            </defs>
+            
+            {/* Head with shadow and outline */}
+            <g filter="url(#endScreenHeadShadow)">
+              {/* Player face image */}
+              {playerData.avatarImageUrl && (
+                <image 
+                  href={playerData.avatarImageUrl} 
+                  x="32" y="2" 
+                  width="36" height="36" 
+                  clipPath="url(#endScreenHeadClip)"
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              )}
+              {/* Circle outline */}
+              <circle 
+                cx="50" cy="20" r="18" 
+                fill={playerData.avatarImageUrl ? "transparent" : "white"} 
+                stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} 
+                strokeWidth="2.5" 
+              />
+            </g>
+            
+            {/* Neck */}
+            <line x1="50" y1="38" x2="50" y2="45" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
+            
             {/* Body */}
-            <line x1="50" y1="35" x2="50" y2="80" stroke="#333" strokeWidth="3"/>
+            <line x1="50" y1="45" x2="50" y2="80" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
+            
             {/* Arms - victory pose if winner */}
             {isWinner ? (
               <>
-                <line x1="50" y1="50" x2="25" y2="35" stroke="#333" strokeWidth="3"/>
-                <line x1="50" y1="50" x2="75" y2="35" stroke="#333" strokeWidth="3"/>
+                <line x1="50" y1="55" x2="25" y2="40" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
+                <line x1="50" y1="55" x2="75" y2="40" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
               </>
             ) : (
               <>
-                <line x1="50" y1="50" x2="30" y2="65" stroke="#333" strokeWidth="3"/>
-                <line x1="50" y1="50" x2="70" y2="65" stroke="#333" strokeWidth="3"/>
+                <line x1="50" y1="55" x2="30" y2="70" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
+                <line x1="50" y1="55" x2="70" y2="70" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
               </>
             )}
+            
             {/* Legs */}
-            <line x1="50" y1="80" x2="35" y2="110" stroke="#333" strokeWidth="3"/>
-            <line x1="50" y1="80" x2="65" y2="110" stroke="#333" strokeWidth="3"/>
+            <line x1="50" y1="80" x2="35" y2="110" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
+            <line x1="50" y1="80" x2="65" y2="110" stroke={playerData.stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="3"/>
           </svg>
-          
-          {/* Face overlay */}
-          {playerData.avatarImageUrl && (
-            <div 
-              className="absolute top-1 left-1/2 transform -translate-x-1/2 w-7 h-7 rounded-full overflow-hidden border border-gray-300"
-              style={{
-                backgroundImage: `url(${playerData.avatarImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
-            />
-          )}
         </div>
       </div>
 

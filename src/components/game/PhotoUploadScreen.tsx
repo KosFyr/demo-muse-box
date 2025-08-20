@@ -200,7 +200,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
               </div>
             ) : previewUrl ? (
               <div className="space-y-4">
-                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white/50">
+                <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white/50 shadow-xl">
                   <img 
                     src={previewUrl} 
                     alt="Avatar preview" 
@@ -347,34 +347,55 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
         {/* Big Head Avatar Preview */}
         {previewUrl && (
           <div className="mt-6 flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-white mb-4">Your Big Head Avatar!</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Το Big Head Avatar σας!</h3>
             <div className="bg-white/20 backdrop-blur rounded-lg p-8">
-              {/* Big Head Stick Figure */}
-              <div className="flex flex-col items-center">
-                {/* Big Head */}
-                <div className="relative w-24 h-24 mb-2">
-                  <img 
-                    src={previewUrl} 
-                    alt="Your big head" 
-                    className="w-full h-full rounded-full object-cover border-3 border-white shadow-lg"
+              {/* SVG Big Head Stick Figure Preview */}
+              <svg viewBox="0 0 100 140" className="w-20 h-28 mx-auto">
+                <defs>
+                  <clipPath id="previewHeadClip">
+                    <circle cx="50" cy="25" r="20" />
+                  </clipPath>
+                  <filter id="previewHeadShadow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="1.5" floodOpacity="0.4" />
+                  </filter>
+                </defs>
+                
+                {/* Head with shadow and outline */}
+                <g filter="url(#previewHeadShadow)">
+                  {/* Player face image */}
+                  <image 
+                    href={previewUrl} 
+                    x="30" y="5" 
+                    width="40" height="40" 
+                    clipPath="url(#previewHeadClip)"
+                    preserveAspectRatio="xMidYMid slice"
                   />
-                </div>
-                {/* Thin Body - natural upright stance */}
-                <div className="flex flex-col items-center">
-                  <div className={`w-0.5 h-12 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Torso */}
-                  <div className="flex">
-                    <div className={`w-6 h-0.5 rotate-12 -mr-3 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left arm */}
-                    <div className={`w-6 h-0.5 -rotate-12 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right arm */}
-                  </div>
-                  <div className={`w-0.5 h-6 mt-1 mb-1 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Lower torso */}
-                  <div className="flex">
-                    <div className={`w-6 h-0.5 rotate-6 -mr-3 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Left leg */}
-                    <div className={`w-6 h-0.5 -rotate-6 ${stickFigureColor === 'pink' ? 'bg-pink-400' : 'bg-white'}`}></div> {/* Right leg */}
-                  </div>
-                </div>
-              </div>
+                  {/* Circle outline */}
+                  <circle 
+                    cx="50" cy="25" r="20" 
+                    fill="transparent" 
+                    stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} 
+                    strokeWidth="2.5" 
+                  />
+                </g>
+                
+                {/* Neck */}
+                <line x1="50" y1="45" x2="50" y2="52" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
+                
+                {/* Body */}
+                <line x1="50" y1="52" x2="50" y2="95" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2.5"/>
+                
+                {/* Arms */}
+                <line x1="50" y1="65" x2="35" y2="75" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
+                <line x1="50" y1="65" x2="65" y2="75" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
+                
+                {/* Legs */}
+                <line x1="50" y1="95" x2="38" y2="125" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
+                <line x1="50" y1="95" x2="62" y2="125" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
+              </svg>
+              
               <p className="text-center text-white/80 text-sm mt-4">
-                Look at that big head! Perfect for climbing! 🧗‍♂️
+                Κοιτάξτε αυτό το μεγάλο κεφάλι! Τέλειο για αναρρίχηση! 🧗‍♂️
               </p>
             </div>
           </div>
