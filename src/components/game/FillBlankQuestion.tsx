@@ -110,8 +110,12 @@ export function FillBlankQuestion({
                         {localHasAnswered && perBlankResults && perBlankResults[index] && (
                           <span className="ml-1 text-orange-500">⛏️</span>
                         )}
-                      </div>
-                    </div>
+                       </div>
+                       {/* Correction below when wrong */}
+                       {localHasAnswered && perBlankResults && correctAnswers && !perBlankResults[index] && (
+                         <div className="text-xs mt-1 text-red-600">Σωστό: <span className="font-semibold">{correctAnswers[index]}</span></div>
+                       )}
+                     </div>
                   </span>
                 )}
               </div>

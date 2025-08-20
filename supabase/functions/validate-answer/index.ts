@@ -30,6 +30,8 @@ serve(async (req) => {
 
     console.log('Validating answer for question:', questionId, 'Type:', questionType);
 
+    console.log('Received request:', { questionId, questionType, userAnswer, userAnswers });
+
     let correctAnswer: string;
     let isCorrect = false;
     let similarity = 0;
@@ -41,6 +43,8 @@ serve(async (req) => {
     let correctAnswersArr: string[] | undefined;
 
     if (questionType === 'fill-in-the-blank') {
+      console.log('Processing fill-in-the-blank question');
+      
       // Get correct answers from fill_blank_exercises table
       const { data: exercise, error } = await supabase
         .from('fill_blank_exercises')
@@ -53,9 +57,14 @@ serve(async (req) => {
         throw new Error('Question not found');
       }
 
+      console.log('Found exercise:', exercise);
+      
       const correctAnswers = exercise.answers as string[];
       correctAnswersArr = correctAnswers;
       correctAnswer = correctAnswers.join(', ');
+
+      console.log('User answers:', userAnswers);
+      console.log('Correct answers:', correctAnswers);
 
       if (userAnswers && userAnswers.length === correctAnswers.length) {
         // Validate each blank with fuzzy matching and collect per-blank correctness
@@ -67,18 +76,27 @@ serve(async (req) => {
           const userAns = (userAnswers[i] || '').toLowerCase().trim();
           const correctAns = correctAnswers[i].toLowerCase().trim();
           
+          console.log(`Comparing blank ${i}: "${userAns}" vs "${correctAns}"`);
+          
           // Simple fuzzy matching - exact match or very close
           let isBlankCorrect = false;
           if (userAns === correctAns) {
             isBlankCorrect = true;
             totalSimilarity += 1;
+            console.log(`Blank ${i}: Exact match`);
           } else if (userAns.includes(correctAns) || correctAns.includes(userAns)) {
             const lengthRatio = Math.min(userAns.length, correctAns.length) / Math.max(userAns.length, correctAns.length);
             if (lengthRatio > 0.7) {
               isBlankCorrect = true;
               totalSimilarity += lengthRatio;
+              console.log(`Blank ${i}: Fuzzy match (${lengthRatio})`);
             }
           }
+          
+          if (!isBlankCorrect) {
+            console.log(`Blank ${i}: No match`);
+          }
+          
           blanks.push(isBlankCorrect);
           if (isBlankCorrect) correctCount++;
         }
@@ -89,6 +107,16 @@ serve(async (req) => {
 
         isCorrect = correctCount === correctAnswers.length;
         similarity = totalSimilarity / correctAnswers.length;
+        
+        console.log('Final FITB results:', { 
+          isCorrect, 
+          similarity, 
+          correctCount, 
+          totalBlanks: correctAnswers.length, 
+          perBlankResults: blanks 
+        });
+      } else {
+        console.log('Invalid user answers length or missing answers');
       }
     } else {
       // Get correct answer from questions table
@@ -115,7 +143,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('Validation result:', { isCorrect, similarity, correctAnswer });
+    console.log('Final validation result:', { isCorrect, similarity, correctAnswer });
 
     // Create response with partial credit data for fill-in-the-blank
     const response: any = {
@@ -128,8 +156,15 @@ serve(async (req) => {
     if (questionType === 'fill-in-the-blank') {
       response.perBlankResults = perBlankResults || [];
       response.correctCount = correctCountDetail ?? 0;
-      response.totalBlanks = totalBlanksDetail ?? (correctAnswersArr?.length || 0);
+      response.totalBlanks = totalBlanksDetail ?? 0;
       response.correctAnswers = correctAnswersArr || [];
+      
+      console.log('Adding FITB data to response:', {
+        perBlankResults: response.perBlankResults,
+        correctCount: response.correctCount,
+        totalBlanks: response.totalBlanks,
+        correctAnswers: response.correctAnswers
+      });
     }
 
     return new Response(
@@ -141,11 +176,15 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in validate-answer function:', error);
+    console.error('Error stack:', error.stack);
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Internal server error',
         isCorrect: false,
-        similarity: 0
+        similarity: 0,
+        perBlankResults: [],
+        correctCount: 0,
+        totalBlanks: 0
       }),
       {
         status: 500,
