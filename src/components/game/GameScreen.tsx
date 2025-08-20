@@ -17,7 +17,7 @@ interface GameScreenProps {
 }
 
 export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd }: GameScreenProps) => {
-  const { questions, loading } = useQuestions();
+  const { questions, loading, error, refetch } = useQuestions();
   const { user } = useAuth();
   const { validateAnswer, validating } = useAnswerValidation();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -138,11 +138,26 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
     }
   };
 
-  if (loading || !currentQuestion) {
+  if (loading || (!currentQuestion && !error)) {
     return (
       <div className="text-center text-white">
         <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
         <p>{loading ? 'Φόρτωση ερωτήσεων...' : 'Φόρτωση ερώτησης...'}</p>
+      </div>
+    );
+  }
+
+  if (error || questions.length === 0) {
+    return (
+      <div className="text-center text-white space-y-4">
+        <div className="text-xl">⚠️ Πρόβλημα φόρτωσης</div>
+        <p className="text-lg">Δεν ήταν δυνατή η φόρτωση των ερωτήσεων.</p>
+        <Button
+          onClick={refetch}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Προσπάθεια ξανά
+        </Button>
       </div>
     );
   }

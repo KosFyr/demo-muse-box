@@ -26,10 +26,10 @@ export function useQuestions() {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
-      // Use secure view instead of direct table access
+      setError(null);
+      // Use secure function instead of direct table access
       const { data, error } = await supabase
-        .from('questions_public')
-        .select('*')
+        .rpc('get_questions_public')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
