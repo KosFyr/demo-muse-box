@@ -298,18 +298,18 @@ export const IcebergGameBoard = ({ effectivePosition, playerData, isClimbing, is
       </div>
 
       {/* Player info and progress */}
-      <div className="text-center mt-4 space-y-2">
-        <div className="text-white font-bold text-lg">
+      <div className="text-center mt-6 space-y-3 animate-fade-in">
+        <div className="text-foreground font-bold text-xl font-gaming text-neon-blue">
           {playerData.name} - Αποστολή Παγόβουνο
         </div>
-        <div className="w-full bg-white/20 rounded-full h-3">
+        <div className="progress-gaming rounded-full h-4">
           <div 
-            className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 h-3 rounded-full transition-all duration-1000"
+            className="progress-fill h-4 rounded-full transition-all duration-1000"
             style={{ width: `${(animatingPosition / 15) * 100}%` }}
           />
         </div>
-        <div className="text-white/80 text-sm">
-          Βάση: {animatingPosition.toFixed(1)}/15 ({Math.round((animatingPosition / 15) * 100)}%)
+        <div className="text-muted-foreground text-sm font-gaming">
+          Βάση: <span className="text-primary font-bold">{animatingPosition.toFixed(1)}/15</span> ({Math.round((animatingPosition / 15) * 100)}%)
         </div>
       </div>
     </div>
