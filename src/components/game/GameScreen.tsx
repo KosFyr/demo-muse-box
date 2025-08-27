@@ -221,13 +221,13 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
       {/* Score Display */}
       <div className="text-center text-white space-y-2">
         <div className="text-2xl font-bold">
-          Επίπεδο {gameState.currentPosition} από 15
+          Lvl {gameState.currentPosition}/15 🎮
         </div>
         <div className="text-lg">
-          Βάση: {(gameState.currentPosition + gameState.currentLevelProgress).toFixed(1)}/15
+          Progress: {(gameState.currentPosition + gameState.currentLevelProgress).toFixed(1)}/15
         </div>
         <div className="text-sm">
-          Σωστές: {gameState.correctAnswers} | Συνολικές: {gameState.totalQuestions}
+          Score: {gameState.correctAnswers}W | {gameState.totalQuestions}Q
         </div>
       </div>
 
@@ -250,8 +250,8 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
           <div className="space-y-4">
             <div className="text-center">
               <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-sm font-medium">
-                {currentQuestion.question_type === 'true-false' ? 'Σωστό/Λάθος' : 
-                 currentQuestion.question_type === 'multiple-choice' ? 'Πολλαπλή Επιλογή' : 'Αντιστοίχιση'}
+                 {currentQuestion.question_type === 'true-false' ? 'T/F 🤔' : 
+                  currentQuestion.question_type === 'multiple-choice' ? 'Multiple Choice 📝' : 'Match Up 🔗'}
               </span>
             </div>
             
@@ -264,18 +264,18 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
               {currentQuestion.question_type === 'true-false' ? (
                 <div className="flex justify-center space-x-4">
                   <Button
-                    onClick={() => handleAnswer('true')}
+                  onClick={() => handleAnswer('true')}
                     disabled={isAnswering}
                     className="bg-green-500 hover:bg-green-600 text-white border-0 px-8"
                   >
-                    Σωστό ✓
+                    True ✓
                   </Button>
                   <Button
                     onClick={() => handleAnswer('false')}
                     disabled={isAnswering}
                     className="bg-red-500 hover:bg-red-600 text-white border-0 px-8"
                   >
-                    Λάθος ✗
+                    False ✗
                   </Button>
                 </div>
               ) : (
@@ -307,7 +307,7 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
                   onClick={handleNextQuestion}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Επόμενη Ερώτηση
+                  Next ➡️
                 </Button>
               </div>
             )}

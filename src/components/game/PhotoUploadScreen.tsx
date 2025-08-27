@@ -152,7 +152,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
     <div className="text-center space-y-8 p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl">
       <div className="space-y-4">
         <h2 className="text-4xl font-bold text-white drop-shadow-lg">
-          Δημιούργησε το Avatar σου!
+          Φτιάξε το drip σου 👕👟
         </h2>
         <p className="text-lg text-white/80">
           Ανέβασε μια φωτογραφία σου για να δημιουργήσεις το stick figure avatar σου
@@ -177,7 +177,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
 
         {/* Photo Upload Area */}
         <div className="space-y-4">
-          <Label className="text-white text-lg">Φωτογραφία Προσώπου</Label>
+          <Label className="text-white text-lg">Drop a selfie 📸</Label>
           
           <div
             className="border-2 border-dashed border-white/40 rounded-2xl p-8 bg-white/10 transition-all hover:bg-white/20 cursor-pointer"
@@ -286,7 +286,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                     <line x1="20" y1="38" x2="24" y2="50" stroke="#333" strokeWidth="1" />
                   </svg>
                 </div>
-                <div className="text-white text-sm font-medium">Κλασικό</div>
+                <div className="text-white text-sm font-medium">OG</div>
               </div>
             </button>
             
@@ -338,7 +338,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                     <line x1="20" y1="38" x2="24" y2="50" stroke="#F472B6" strokeWidth="1" />
                   </svg>
                 </div>
-                <div className="text-white text-sm font-medium">Ρόζ</div>
+                <div className="text-white text-sm font-medium">Pinky Vibes 💖</div>
               </div>
             </button>
           </div>
@@ -419,7 +419,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
           size="lg"
           className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-xl disabled:opacity-50"
         >
-          Ξεκίνα την Αναρρίχηση! 🏔️
+          Game On 🎮
         </Button>
       </div>
     </div>

@@ -40,7 +40,7 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
         </div>
         
         <h2 className="text-4xl font-bold text-white drop-shadow-lg">
-          {isWinner ? 'Συγχαρητήρια!' : 'Παιχνίδι Τελειωμένο!'}
+          {isWinner ? 'GG! You Won! 🏆' : 'Game Over 😤'}
         </h2>
         
         <p className="text-xl text-white/90">
@@ -119,7 +119,7 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
             {gameState.currentPosition}
           </div>
           <div className="text-white/80 text-sm">
-            Τελικό Επίπεδο
+            Final Lvl 🎯
           </div>
         </div>
 
@@ -131,7 +131,7 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
             {gameState.correctAnswers}
           </div>
           <div className="text-white/80 text-sm">
-            Σωστές Απαντήσεις
+            Right Answers 🎯
           </div>
         </div>
 
@@ -143,7 +143,7 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
             {gameState.totalQuestions}
           </div>
           <div className="text-white/80 text-sm">
-            Συνολικές Ερωτήσεις
+            Total Qs 📊
           </div>
         </div>
 
@@ -155,14 +155,14 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
             {accuracy}%
           </div>
           <div className="text-white/80 text-sm">
-            Ακρίβεια
+            Accuracy 📈
           </div>
         </div>
       </div>
 
       {/* Player Name */}
       <div className="text-xl text-white/90">
-        Παίκτης: <span className="font-bold text-white">{playerData.name}</span>
+        Player: <span className="font-bold text-white">{playerData.name}</span> 🎮
       </div>
 
       {/* Action Buttons */}
@@ -173,7 +173,7 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
           className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-xl px-8"
         >
           <RotateCcw className="w-5 h-5 mr-2" />
-          Παίξε Ξανά
+          Run It Back 🔄
         </Button>
         
         <Button 
@@ -183,7 +183,7 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
           className="bg-white/20 border-white/40 text-white hover:bg-white/30 px-8"
         >
           <Home className="w-5 h-5 mr-2" />
-          Αρχική Σελίδα
+          Home 🏠
         </Button>
       </div>
 
