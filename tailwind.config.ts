@@ -85,22 +85,62 @@ export default {
 						height: '0'
 					}
 				},
-				'armSwing': {
-					'0%': { transform: 'rotate(-10deg)' },
-					'50%': { transform: 'rotate(10deg)' },
-					'100%': { transform: 'rotate(-10deg)' }
+				// Gaming Animations
+				'glow-pulse': {
+					'0%, 100%': { 
+						'box-shadow': '0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor',
+						opacity: '1'
+					},
+					'50%': { 
+						'box-shadow': '0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor',
+						opacity: '0.8'
+					}
 				},
-				'walkStep': {
-					'0%': { transform: 'translateX(-2px) rotate(-5deg)' },
-					'50%': { transform: 'translateX(2px) rotate(5deg)' },
-					'100%': { transform: 'translateX(-2px) rotate(-5deg)' }
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'slide-in-gaming': {
+					'0%': { 
+						transform: 'translateX(-100%) scale(0.8)',
+						opacity: '0'
+					},
+					'100%': { 
+						transform: 'translateX(0) scale(1)',
+						opacity: '1'
+					}
+				},
+				'cyber-shake': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'10%': { transform: 'translateX(-2px)' },
+					'20%': { transform: 'translateX(2px)' },
+					'30%': { transform: 'translateX(-2px)' },
+					'40%': { transform: 'translateX(2px)' },
+					'50%': { transform: 'translateX(-1px)' },
+					'60%': { transform: 'translateX(1px)' },
+					'70%': { transform: 'translateX(-1px)' },
+					'80%': { transform: 'translateX(1px)' },
+					'90%': { transform: 'translateX(0)' }
+				},
+				'neon-flicker': {
+					'0%, 100%': { opacity: '1' },
+					'2%': { opacity: '0.8' },
+					'4%': { opacity: '1' },
+					'8%': { opacity: '0.9' },
+					'12%': { opacity: '1' },
+					'22%': { opacity: '0.95' },
+					'24%': { opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'armSwing': 'armSwing 0.8s ease-in-out infinite',
-				'walkStep': 'walkStep 0.6s ease-in-out infinite'
+				// Gaming Animations
+				'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'slide-in-gaming': 'slide-in-gaming 0.5s ease-out',
+				'cyber-shake': 'cyber-shake 0.5s ease-in-out',
+				'neon-flicker': 'neon-flicker 1.5s infinite linear'
 			}
 		}
 	},

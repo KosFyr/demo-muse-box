@@ -79,150 +79,168 @@ export function FillBlankQuestion({
   const allFieldsFilled = userAnswers.every(answer => answer.trim() !== '');
   
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          {/* Question with input fields */}
-          <div className="text-lg leading-relaxed">
-            {questionParts.map((part, index) => (
-              <div key={index} className="inline">
-                <span>{part}</span>
-                {index < blanksCount && (
-                  <span className="inline-block mx-1 relative">
-                    <div className="flex flex-col items-center gap-1">
-                      <div className="flex items-center gap-1">
-                        <Input
-                          id={`blank-${index}`}
-                          value={userAnswers[index] || ''}
-                          onChange={(e) => handleInputChange(index, e.target.value)}
-                          onKeyPress={(e) => handleKeyPress(e, index)}
-                          disabled={localHasAnswered || isValidating}
-                          className={cn(
-                            "inline-block w-24 h-8 text-center text-sm border-2",
-                            localHasAnswered && perBlankResults ? 
-                              (perBlankResults[index] ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50") :
-                              ""
-                          )}
-                          placeholder="..."
-                          autoComplete="off"
-                        />
-                        {/* Ice pick indicator for correct answers */}
-                        {localHasAnswered && perBlankResults && perBlankResults[index] && (
-                          <span className="ml-1 text-orange-500">⛏️</span>
+    <div className="w-full card-gaming rounded-2xl p-6 border border-primary/30 glow-cyan animate-slide-in-gaming">
+      <div className="space-y-6">
+        {/* Gaming Question Header */}
+        <div className="text-center mb-6">
+          <div className="inline-block px-4 py-2 card-gaming rounded-full border border-accent/30 glow-lime">
+            <span className="text-accent font-bold">Fill the Blanks 🎯</span>
+          </div>
+        </div>
+
+        {/* Question with Neon Input Fields */}
+        <div className="text-lg leading-relaxed font-medium text-white">
+          {questionParts.map((part, index) => (
+            <div key={index} className="inline">
+              <span className="text-white/90">{part}</span>
+              {index < blanksCount && (
+                <span className="inline-block mx-2 relative">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id={`blank-${index}`}
+                        value={userAnswers[index] || ''}
+                        onChange={(e) => handleInputChange(index, e.target.value)}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
+                        disabled={localHasAnswered || isValidating}
+                        className={cn(
+                          "inline-block w-28 h-10 text-center text-sm font-bold border-2 rounded-xl transition-all duration-300",
+                          "bg-white/5 backdrop-blur-md text-white placeholder-white/50",
+                          !localHasAnswered && "border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/30 glow-cyan",
+                          localHasAnswered && perBlankResults ? 
+                            (perBlankResults[index] 
+                              ? "border-gaming-success bg-gaming-success/10 glow-lime animate-glow-pulse" 
+                              : "border-gaming-error bg-gaming-error/10 animate-cyber-shake") :
+                            ""
                         )}
-                       </div>
-                       {/* Correction below when wrong */}
-                       {localHasAnswered && perBlankResults && correctAnswers && !perBlankResults[index] && (
-                         <div className="text-xs mt-1 text-red-600">Σωστό: <span className="font-semibold">{correctAnswers[index]}</span></div>
-                       )}
+                        placeholder="..."
+                        autoComplete="off"
+                      />
+                      {/* Gaming Success Indicator */}
+                      {localHasAnswered && perBlankResults && perBlankResults[index] && (
+                        <span className="ml-1 text-gaming-success text-xl animate-bounce">⚡</span>
+                      )}
                      </div>
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-          
-          {/* Action buttons */}
-          <div className="flex flex-wrap gap-3">
-            {!localHasAnswered && (
-              <>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!allFieldsFilled || isValidating}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isValidating ? 'Επεξεργασία...' : 'Υποβολή Απάντησης'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowHint(!showHint)}
-                  className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
-                  disabled={isValidating}
-                >
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  {showHint ? 'Απόκρυψη' : 'Υπόδειξη'}
-                </Button>
-              </>
-            )}
-          </div>
-          
-          {/* Hint */}
-          {showHint && !localHasAnswered && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Υπόδειξη:</strong> Αριθμός κενών: {blanksCount}. 
-                Προσπαθήστε να θυμηθείτε τους βασικούς ορισμούς από το μάθημα ΑΕΠΠ.
-              </p>
-            </div>
-          )}
-          
-           {/* Feedback */}
-           {localHasAnswered && feedback && (
-             <div className={cn(
-               "border rounded-md p-4",
-               feedback.includes('Σωστά') || feedback.includes('Σωστό')
-                 ? "bg-green-50 border-green-200" 
-                 : feedback.includes('Σχεδόν σωστό')
-                 ? "bg-yellow-50 border-yellow-200"
-                 : "bg-red-50 border-red-200"
-             )}>
-               <div className="flex items-center gap-2 mb-2">
-                 {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
-                   <>
-                     <CheckCircle className="h-5 w-5 text-green-600" />
-                     <Badge variant="default" className="bg-green-600">
-                       Σωστή απάντηση!
-                     </Badge>
-                   </>
-                 ) : feedback.includes('Σχεδόν σωστό') ? (
-                   <>
-                     <CheckCircle className="h-5 w-5 text-yellow-600" />
-                     <Badge variant="default" className="bg-yellow-600">
-                       Σχεδόν σωστό!
-                     </Badge>
-                   </>
-                 ) : (
-                   <>
-                     <XCircle className="h-5 w-5 text-red-600" />
-                     <Badge variant="destructive">
-                       Μερική απάντηση
-                     </Badge>
-                   </>
-                 )}
-               </div>
-              
-              {/* Partial credit display */}
-              {typeof correctCount === 'number' && typeof totalBlanks === 'number' && (
-                <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-sm text-blue-800 font-medium">
-                    ⛏️ Καρφώθηκαν {correctCount}/{totalBlanks} αγκίστρια
-                  </p>
-                  <div className="w-full bg-blue-200 rounded-full h-2 mt-1">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(correctCount / totalBlanks) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              <p className="text-sm text-gray-700 mb-3">{feedback}</p>
-              
-              
-              {onNextQuestion && (
-                <div className="mt-4 text-center">
-                  <Button
-                    onClick={onNextQuestion}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Επόμενη Ερώτηση
-                  </Button>
-                </div>
+                     {/* Gaming Error Correction */}
+                     {localHasAnswered && perBlankResults && correctAnswers && !perBlankResults[index] && (
+                       <div className="text-xs mt-1 px-2 py-1 card-gaming rounded border border-gaming-error/30 text-gaming-error font-bold">
+                         Correct: <span className="text-gaming-success">{correctAnswers[index]}</span>
+                       </div>
+                     )}
+                   </div>
+                </span>
               )}
             </div>
+          ))}
+        </div>
+          
+        {/* Gaming Action Buttons */}
+        <div className="flex flex-wrap justify-center gap-4">
+          {!localHasAnswered && (
+            <>
+              <Button
+                onClick={handleSubmit}
+                disabled={!allFieldsFilled || isValidating}
+                className="btn-gaming bg-gradient-to-r from-primary to-secondary hover:scale-105 transform transition-all duration-300 glow-cyan font-bold px-8 py-3"
+              >
+                {isValidating ? '⚡ Processing...' : '🚀 Submit ⚡'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowHint(!showHint)}
+                className="btn-gaming border-gaming-warning text-gaming-warning hover:bg-gaming-warning/10 hover:scale-105 transform transition-all duration-300 font-bold px-6 py-3"
+                disabled={isValidating}
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                {showHint ? '🔒 Hide' : '💡 Hint'}
+              </Button>
+            </>
           )}
         </div>
-      </CardContent>
-    </Card>
+          
+        {/* Gaming Hint Panel */}
+        {showHint && !localHasAnswered && (
+          <div className="card-gaming border border-gaming-warning/30 rounded-xl p-4 glow-pink animate-slide-in-gaming">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">💡</span>
+              <span className="font-bold text-gaming-warning">Gaming Hint</span>
+            </div>
+            <p className="text-sm text-white/80 font-medium">
+              <strong className="text-gaming-warning">Blanks to fill:</strong> {blanksCount} 🎯
+              <br />
+              Think about basic ΑΕΠΠ concepts and programming fundamentals! 🚀
+            </p>
+          </div>
+        )}
+          
+        {/* Gaming Feedback Panel */}
+        {localHasAnswered && feedback && (
+          <div className={cn(
+            "card-gaming border rounded-xl p-6 animate-slide-in-gaming",
+            feedback.includes('Σωστά') || feedback.includes('Σωστό')
+              ? "border-gaming-success/30 glow-lime" 
+              : feedback.includes('Σχεδόν σωστό')
+              ? "border-gaming-warning/30 glow-pink"
+              : "border-gaming-error/30"
+          )}>
+            <div className="flex items-center gap-3 mb-4">
+              {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
+                <>
+                  <CheckCircle className="h-6 w-6 text-gaming-success animate-bounce" />
+                  <Badge className="bg-gaming-success text-white font-bold px-4 py-2">
+                    🎯 Perfect Shot!
+                  </Badge>
+                </>
+              ) : feedback.includes('Σχεδόν σωστό') ? (
+                <>
+                  <CheckCircle className="h-6 w-6 text-gaming-warning animate-pulse" />
+                  <Badge className="bg-gaming-warning text-white font-bold px-4 py-2">
+                    🔥 Almost There!
+                  </Badge>
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-6 w-6 text-gaming-error animate-cyber-shake" />
+                  <Badge className="bg-gaming-error text-white font-bold px-4 py-2">
+                    💀 Partial Hit
+                  </Badge>
+                </>
+              )}
+            </div>
+           
+           {/* Gaming Progress Bar */}
+           {typeof correctCount === 'number' && typeof totalBlanks === 'number' && (
+             <div className="mb-4 p-4 card-gaming border border-primary/20 rounded-xl">
+               <div className="flex items-center gap-2 mb-2">
+                 <span className="text-xl">⚡</span>
+                 <p className="text-sm text-primary font-bold">
+                   Hits: {correctCount}/{totalBlanks} targets locked! 🎯
+                 </p>
+               </div>
+               <div className="progress-gaming rounded-full h-3">
+                 <div 
+                   className="progress-bar h-3 rounded-full transition-all duration-1000 animate-glow-pulse"
+                   style={{ width: `${(correctCount / totalBlanks) * 100}%` }}
+                 />
+               </div>
+             </div>
+           )}
+           
+           <p className="text-sm text-white/80 mb-4 font-medium">{feedback}</p>
+           
+           {onNextQuestion && (
+             <div className="text-center">
+               <Button
+                 onClick={onNextQuestion}
+                 className="btn-gaming bg-gradient-to-r from-accent to-primary hover:scale-105 transform transition-all duration-300 glow-cyan font-bold px-8 py-3"
+               >
+                 🚀 Next Quest ➡️
+               </Button>
+             </div>
+           )}
+         </div>
+       )}
+      </div>
+    </div>
   );
 }

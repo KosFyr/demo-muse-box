@@ -70,44 +70,44 @@ export const IcebergGameBoard = ({ effectivePosition, playerData, isClimbing, is
 
   return (
     <div className="relative w-full max-w-lg mx-auto">
-      {/* Iceberg Mission Background */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/20" style={{ height: '500px' }}>
+      {/* Gaming Iceberg Mission Background */}
+      <div className="relative overflow-hidden card-gaming rounded-3xl border border-primary/30 glow-cyan" style={{ height: '500px' }}>
         <svg 
           viewBox={`0 ${cameraY} 400 400`}
-          className="w-full h-full bg-gradient-to-b from-blue-100/30 via-blue-200/40 to-blue-300/50"
-          style={{ background: 'linear-gradient(to bottom, #87CEEB, #4682B4, #191970)' }}
+          className="w-full h-full"
+          style={{ background: 'linear-gradient(135deg, #0f0f23, #1a1a40, #2d1b69)' }}
         >
-          {/* Sea level */}
-          <rect x="0" y="650" width="400" height="150" fill="url(#seaGradient)" />
+          {/* Gaming Sea level with neon effects */}
+          <rect x="0" y="650" width="400" height="150" fill="url(#gamingSeaGradient)" />
           
-          {/* Iceberg underwater part */}
+          {/* Gaming Iceberg underwater part */}
           <polygon
             points="50,650 350,650 300,750 100,750"
-            fill="url(#icebergGradient)"
-            opacity="0.6"
+            fill="url(#gamingIcebergGradient)"
+            opacity="0.7"
           />
 
-          {/* Gradients */}
+          {/* Gaming Gradients */}
           <defs>
-            <linearGradient id="seaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style={{ stopColor: '#4682B4', stopOpacity: 0.8 }} />
-              <stop offset="100%" style={{ stopColor: '#191970', stopOpacity: 1 }} />
+            <linearGradient id="gamingSeaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#00c9ff', stopOpacity: 0.6 }} />
+              <stop offset="100%" style={{ stopColor: '#0f0f23', stopOpacity: 1 }} />
             </linearGradient>
-            <linearGradient id="icebergGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style={{ stopColor: '#E0F6FF', stopOpacity: 0.9 }} />
-              <stop offset="100%" style={{ stopColor: '#B0E0E6', stopOpacity: 0.7 }} />
+            <linearGradient id="gamingIcebergGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#7fff00', stopOpacity: 0.3 }} />
+              <stop offset="100%" style={{ stopColor: '#ff6ec7', stopOpacity: 0.2 }} />
             </linearGradient>
-            <linearGradient id="iceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style={{ stopColor: '#F0F8FF', stopOpacity: 1 }} />
-              <stop offset="100%" style={{ stopColor: '#E6F3FF', stopOpacity: 0.9 }} />
+            <linearGradient id="gamingIceGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style={{ stopColor: 'rgba(255,255,255,0.9)', stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: 'rgba(0,201,255,0.3)', stopOpacity: 0.8 }} />
             </linearGradient>
           </defs>
 
-          {/* Floating ice particles */}
-          <circle cx="50" cy={cameraY + 50} r="3" fill="white" opacity="0.7">
+          {/* Gaming Floating particles */}
+          <circle cx="50" cy={cameraY + 50} r="3" fill="#7fff00" opacity="0.8" className="animate-float">
             <animate attributeName="cy" values={`${cameraY + 50};${cameraY + 70};${cameraY + 50}`} dur="3s" repeatCount="indefinite" />
           </circle>
-          <circle cx="350" cy={cameraY + 80} r="2" fill="white" opacity="0.6">
+          <circle cx="350" cy={cameraY + 80} r="2" fill="#ff6ec7" opacity="0.7" className="animate-pulse">
             <animate attributeName="cy" values={`${cameraY + 80};${cameraY + 60};${cameraY + 80}`} dur="4s" repeatCount="indefinite" />
           </circle>
 
@@ -118,38 +118,41 @@ export const IcebergGameBoard = ({ effectivePosition, playerData, isClimbing, is
             
             return (
               <g key={base.level}>
-                {/* Ice platform */}
+                {/* Gaming Platform with neon glow */}
                 <ellipse
                   cx={base.x}
                   cy={base.y + 5}
                   rx="45"
                   ry="12"
-                  fill="url(#iceGradient)"
-                  stroke={base.level === Math.floor(animatingPosition) ? '#00BFFF' : '#B0E0E6'}
+                  fill="url(#gamingIceGradient)"
+                  stroke={base.level === Math.floor(animatingPosition) ? '#00BFFF' : '#7fff00'}
                   strokeWidth="2"
                   opacity="0.9"
+                  className={base.level === Math.floor(animatingPosition) ? 'animate-glow-pulse' : ''}
                 />
                 
-                {/* Platform details */}
+                {/* Gaming Platform details with neon colors */}
                 <rect
                   x={base.x - 40}
                   y={base.y}
                   width="80"
                   height="8"
                   rx="4"
-                  fill={base.isGoal ? '#FFD700' : base.isCheckpoint ? '#FF69B4' : '#E6F3FF'}
+                  fill={base.isGoal ? '#FFD700' : base.isCheckpoint ? '#ff6ec7' : '#7fff00'}
                   stroke={base.level === Math.floor(animatingPosition) ? '#00BFFF' : 'none'}
                   strokeWidth="2"
+                  className={base.level === Math.floor(animatingPosition) ? 'animate-glow-pulse' : ''}
                 />
                 
-                {/* Level number */}
+                {/* Gaming Level number */}
                 <text
                   x={base.x}
                   y={base.y - 15}
                   textAnchor="middle"
-                  fill="#003366"
+                  fill="#ffffff"
                   fontSize="14"
                   fontWeight="bold"
+                  className="gaming-title"
                 >
                   {base.level}
                 </text>
@@ -297,19 +300,19 @@ export const IcebergGameBoard = ({ effectivePosition, playerData, isClimbing, is
         </svg>
       </div>
 
-      {/* Player info and progress */}
-      <div className="text-center mt-4 space-y-2">
-        <div className="text-white font-bold text-lg">
-          {playerData.name} - Αποστολή Παγόβουνο
+      {/* Gaming Player info and progress */}
+      <div className="text-center mt-4 space-y-3">
+        <div className="text-white font-bold text-lg gaming-title">
+          {playerData.name} - <span className="text-accent">Cyber Mission</span> 🚀
         </div>
-        <div className="w-full bg-white/20 rounded-full h-3">
+        <div className="progress-gaming rounded-full h-4 p-0.5">
           <div 
-            className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 h-3 rounded-full transition-all duration-1000"
+            className="progress-bar h-full rounded-full transition-all duration-1000 animate-glow-pulse"
             style={{ width: `${(animatingPosition / 15) * 100}%` }}
           />
         </div>
-        <div className="text-white/80 text-sm">
-          Βάση: {animatingPosition.toFixed(1)}/15 ({Math.round((animatingPosition / 15) * 100)}%)
+        <div className="text-white/80 text-sm font-medium">
+          Position: <span className="text-primary font-bold">{animatingPosition.toFixed(1)}</span>/15 ({Math.round((animatingPosition / 15) * 100)}%)
         </div>
       </div>
     </div>

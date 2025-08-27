@@ -218,16 +218,18 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
         isSlipping={isSlipping}
       />
 
-      {/* Score Display */}
-      <div className="text-center text-white space-y-2">
-        <div className="text-2xl font-bold">
-          Lvl {gameState.currentPosition}/15 🎮
-        </div>
-        <div className="text-lg">
-          Progress: {(gameState.currentPosition + gameState.currentLevelProgress).toFixed(1)}/15
-        </div>
-        <div className="text-sm">
-          Score: {gameState.correctAnswers}W | {gameState.totalQuestions}Q
+      {/* Gaming Score HUD */}
+      <div className="text-center text-white space-y-3">
+        <div className="card-gaming p-4 rounded-2xl border border-primary/30 glow-cyan">
+          <div className="text-3xl font-black gaming-title">
+            Lvl <span className="text-accent">{gameState.currentPosition}</span>/15 🎮
+          </div>
+          <div className="text-lg font-bold text-white/90">
+            Progress: <span className="text-primary">{(gameState.currentPosition + gameState.currentLevelProgress).toFixed(1)}</span>/15
+          </div>
+          <div className="text-sm text-white/70 font-medium">
+            Score: <span className="text-gaming-success">{gameState.correctAnswers}</span>W | <span className="text-white/60">{gameState.totalQuestions}</span>Q
+          </div>
         </div>
       </div>
 
@@ -246,47 +248,46 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
           correctAnswers={hasAnswered ? lastResult?.correctAnswers : undefined}
         />
       ) : (
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="space-y-4">
+        <div className="card-gaming backdrop-blur-md rounded-2xl p-6 border border-primary/20 glow-cyan animate-slide-in-gaming">
+          <div className="space-y-6">
             <div className="text-center">
-              <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-sm font-medium">
+              <span className="inline-block px-4 py-2 card-gaming rounded-full border border-accent/30 text-accent font-bold glow-lime">
                  {currentQuestion.question_type === 'true-false' ? 'T/F 🤔' : 
                   currentQuestion.question_type === 'multiple-choice' ? 'Multiple Choice 📝' : 'Match Up 🔗'}
               </span>
             </div>
             
-            <h3 className="text-xl text-white text-center font-medium">
+            <h3 className="text-xl text-white text-center font-bold gaming-title">
               {currentQuestion.question_text}
             </h3>
 
-            {/* Answer Options */}
-            <div className="space-y-3">
+            {/* Gaming Answer Options */}
+            <div className="space-y-4">
               {currentQuestion.question_type === 'true-false' ? (
-                <div className="flex justify-center space-x-4">
+                <div className="flex justify-center space-x-6">
                   <Button
-                  onClick={() => handleAnswer('true')}
+                    onClick={() => handleAnswer('true')}
                     disabled={isAnswering}
-                    className="bg-green-500 hover:bg-green-600 text-white border-0 px-8"
+                    className="btn-gaming bg-gradient-to-r from-gaming-success to-accent hover:scale-110 transform transition-all duration-300 glow-lime text-white border-0 px-10 py-4 font-black"
                   >
                     True ✓
                   </Button>
                   <Button
                     onClick={() => handleAnswer('false')}
                     disabled={isAnswering}
-                    className="bg-red-500 hover:bg-red-600 text-white border-0 px-8"
+                    className="btn-gaming bg-gradient-to-r from-gaming-error to-secondary hover:scale-110 transform transition-all duration-300 glow-pink text-white border-0 px-10 py-4 font-black"
                   >
                     False ✗
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {currentQuestion.options?.map((option, index) => (
                     <Button
                       key={index}
                       onClick={() => handleAnswer(option)}
                       disabled={isAnswering}
-                      variant="outline"
-                      className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20"
+                      className="w-full btn-gaming border-primary/30 text-white hover:bg-primary/20 hover:scale-105 transform transition-all duration-300 font-medium py-4"
                     >
                       {option}
                     </Button>
@@ -295,17 +296,17 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
               )}
             </div>
 
-            {/* Feedback */}
+            {/* Gaming Feedback */}
             {showFeedback && (
-              <div className="text-center space-y-4">
-                <div className={`text-lg font-bold ${
-                  feedback.includes('Σωστά') ? 'text-green-300' : 'text-red-300'
+              <div className="text-center space-y-6 animate-slide-in-gaming">
+                <div className={`text-xl font-black gaming-title ${
+                  feedback.includes('Σωστά') ? 'text-gaming-success glow-lime animate-bounce' : 'text-gaming-error animate-cyber-shake'
                 }`}>
                   {feedback}
                 </div>
                 <Button
                   onClick={handleNextQuestion}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="btn-gaming bg-gradient-to-r from-accent to-primary hover:scale-110 transform transition-all duration-300 glow-cyan font-black px-8 py-4"
                 >
                   Next ➡️
                 </Button>
