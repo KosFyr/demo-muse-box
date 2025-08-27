@@ -13,6 +13,97 @@ interface ValidateAnswerRequest {
   userAnswers?: string[];
 }
 
+// Fuzzy matching utilities for Greek text
+function normalizeGreekText(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[άα]/g, 'α')
+    .replace(/[έε]/g, 'ε')
+    .replace(/[ήη]/g, 'η')
+    .replace(/[ίι]/g, 'ι')
+    .replace(/[όο]/g, 'ο')
+    .replace(/[ύυ]/g, 'υ')
+    .replace(/[ώω]/g, 'ω')
+    .replace(/ς$/g, 'σ') // Final sigma to sigma
+    .replace(/[.,;:!?]/g, '') // Remove punctuation
+    .replace(/\s+/g, ' '); // Normalize spaces
+}
+
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix: number[][] = [];
+  
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+  
+  return matrix[str2.length][str1.length];
+}
+
+function calculateSimilarity(str1: string, str2: string): number {
+  const maxLength = Math.max(str1.length, str2.length);
+  if (maxLength === 0) return 1.0;
+  
+  const distance = levenshteinDistance(str1, str2);
+  return (maxLength - distance) / maxLength;
+}
+
+function smartFuzzyMatch(userAnswer: string, correctAnswer: string): { isMatch: boolean; similarity: number; feedback: string } {
+  const normalizedUser = normalizeGreekText(userAnswer);
+  const normalizedCorrect = normalizeGreekText(correctAnswer);
+  
+  // For very short words (≤3 chars), require exact match after normalization
+  if (normalizedCorrect.length <= 3) {
+    const isExact = normalizedUser === normalizedCorrect;
+    return {
+      isMatch: isExact,
+      similarity: isExact ? 1.0 : 0,
+      feedback: isExact ? 'Σωστό' : 'Λάθος'
+    };
+  }
+  
+  // Exact match after normalization
+  if (normalizedUser === normalizedCorrect) {
+    return { 
+      isMatch: true, 
+      similarity: 1.0,
+      feedback: 'Σωστό'
+    };
+  }
+  
+  // Calculate similarity for longer words
+  const similarity = calculateSimilarity(normalizedUser, normalizedCorrect);
+  
+  // Use higher threshold for acceptance (0.8 for more accurate matching)
+  const threshold = 0.8;
+  const isMatch = similarity >= threshold;
+  
+  let feedback = 'Λάθος';
+  if (isMatch) {
+    feedback = similarity >= 0.95 ? 'Σωστό' : 'Σχεδόν σωστό';
+  }
+  
+  return { isMatch, similarity, feedback };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -147,31 +238,19 @@ serve(async (req) => {
         const len = Math.min(userAnswers.length, correctAnswersArr.length);
 
         for (let i = 0; i < len; i++) {
-          const userAns = (userAnswers[i] || '').toLowerCase().trim();
-          const correctAns = correctAnswersArr[i].toLowerCase().trim();
+          const userAns = userAnswers[i] || '';
+          const correctAns = correctAnswersArr[i];
           
           console.log(`Comparing blank ${i}: "${userAns}" vs "${correctAns}"`);
           
-          // Simple fuzzy matching - exact match or very close
-          let isBlankCorrect = false;
-          if (userAns === correctAns) {
-            isBlankCorrect = true;
-            totalSimilarity += 1;
-            console.log(`Blank ${i}: Exact match`);
-          } else if (userAns && (userAns.includes(correctAns) || correctAns.includes(userAns))) {
-            const lengthRatio = Math.min(userAns.length, correctAns.length) / Math.max(userAns.length, correctAns.length);
-            if (lengthRatio > 0.7) {
-              isBlankCorrect = true;
-              totalSimilarity += lengthRatio;
-              console.log(`Blank ${i}: Fuzzy match (${lengthRatio})`);
-            }
-          }
+          // Use smart fuzzy matching with Greek text normalization
+          const matchResult = smartFuzzyMatch(userAns, correctAns);
+          const isBlankCorrect = matchResult.isMatch;
           
-          if (!isBlankCorrect) {
-            console.log(`Blank ${i}: No match`);
-          }
+          console.log(`Blank ${i}: ${matchResult.feedback} (similarity: ${matchResult.similarity})`);
           
           blanks.push(isBlankCorrect);
+          totalSimilarity += matchResult.similarity;
           if (isBlankCorrect) correctCount++;
         }
 

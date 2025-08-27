@@ -156,31 +156,40 @@ export function FillBlankQuestion({
             </div>
           )}
           
-          {/* Feedback */}
-          {localHasAnswered && feedback && (
-            <div className={cn(
-              "border rounded-md p-4",
-              feedback.includes('Σωστά') || feedback.includes('Σωστό')
-                ? "bg-green-50 border-green-200" 
-                : "bg-red-50 border-red-200"
-            )}>
-              <div className="flex items-center gap-2 mb-2">
-                {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
-                  <>
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <Badge variant="default" className="bg-green-600">
-                      Σωστή απάντηση!
-                    </Badge>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5 text-red-600" />
-                    <Badge variant="destructive">
-                      Μερική απάντηση
-                    </Badge>
-                  </>
-                )}
-              </div>
+           {/* Feedback */}
+           {localHasAnswered && feedback && (
+             <div className={cn(
+               "border rounded-md p-4",
+               feedback.includes('Σωστά') || feedback.includes('Σωστό')
+                 ? "bg-green-50 border-green-200" 
+                 : feedback.includes('Σχεδόν σωστό')
+                 ? "bg-yellow-50 border-yellow-200"
+                 : "bg-red-50 border-red-200"
+             )}>
+               <div className="flex items-center gap-2 mb-2">
+                 {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
+                   <>
+                     <CheckCircle className="h-5 w-5 text-green-600" />
+                     <Badge variant="default" className="bg-green-600">
+                       Σωστή απάντηση!
+                     </Badge>
+                   </>
+                 ) : feedback.includes('Σχεδόν σωστό') ? (
+                   <>
+                     <CheckCircle className="h-5 w-5 text-yellow-600" />
+                     <Badge variant="default" className="bg-yellow-600">
+                       Σχεδόν σωστό!
+                     </Badge>
+                   </>
+                 ) : (
+                   <>
+                     <XCircle className="h-5 w-5 text-red-600" />
+                     <Badge variant="destructive">
+                       Μερική απάντηση
+                     </Badge>
+                   </>
+                 )}
+               </div>
               
               {/* Partial credit display */}
               {typeof correctCount === 'number' && typeof totalBlanks === 'number' && (
