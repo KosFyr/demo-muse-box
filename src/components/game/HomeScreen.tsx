@@ -6,42 +6,31 @@ interface HomeScreenProps {
 
 export const HomeScreen = ({ onNext }: HomeScreenProps) => {
   return (
-    <div className="text-center space-y-8 p-8 card-gaming rounded-3xl animate-fade-in">
-      <div className="space-y-6 animate-scale-in">
-        <h1 className="text-6xl font-bold text-gaming-gradient drop-shadow-lg font-gaming animate-glow-pulse">
+    <div className="text-center space-y-8 p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl">
+      <div className="space-y-4">
+        <h1 className="text-6xl font-bold text-white drop-shadow-lg">
           🏔️ Παιχνίδι Προγραμματισμού
         </h1>
-        <div className="text-3xl text-neon-blue font-display animate-neon-flicker">
+        <p className="text-2xl text-white/90 drop-shadow-md">
           Αναρρίχηση στο Βουνό της Γνώσης
-        </div>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        </p>
+        <p className="text-lg text-white/80 max-w-2xl mx-auto">
           Ξεκίνα την περιπέτειά σου! Απάντησε σωστά στις ερωτήσεις για να ανέβεις στην κορυφή του βουνού. 
           Λάθος απάντηση σημαίνει πτώση με αλεξίπτωτο!
         </p>
       </div>
       
-      <div className="space-y-6 animate-fade-in-up">
-        <div className="glass-effect rounded-2xl p-6 space-y-3">
-          <div className="text-accent text-sm font-medium space-y-2">
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-neon-green">✅</span>
-              <span>Σωστή απάντηση: Ανέβασμα 2 επίπεδα</span>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-destructive">❌</span>
-              <span>Λάθος απάντηση: Κατέβασμα 1 επίπεδο</span>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-gaming-orange">🎯</span>
-              <span>Στόχος: Φτάσε στην κορυφή (επίπεδο 15)</span>
-            </div>
-          </div>
+      <div className="space-y-4">
+        <div className="text-white/70 text-sm space-y-1">
+          <p>✅ Σωστή απάντηση: Ανέβασμα 2 επίπεδα</p>
+          <p>❌ Λάθος απάντηση: Κατέβασμα 1 επίπεδο</p>
+          <p>🎯 Στόχος: Φτάσε στην κορυφή (επίπεδο 15)</p>
         </div>
         
         <Button 
           onClick={onNext}
           size="lg"
-          className="btn-gaming text-xl px-12 py-6 font-gaming font-bold border-0 animate-breath"
+          className="text-xl px-12 py-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-xl transform transition-all hover:scale-105"
         >
           🚀 Έναρξη Παιχνιδιού
         </Button>

@@ -79,18 +79,18 @@ export function FillBlankQuestion({
   const allFieldsFilled = userAnswers.every(answer => answer.trim() !== '');
   
   return (
-    <Card className="w-full card-gaming animate-fade-in">
-      <CardContent className="p-8">
-        <div className="space-y-8">
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="space-y-6">
           {/* Question with input fields */}
-          <div className="text-lg leading-relaxed font-gaming">
+          <div className="text-lg leading-relaxed">
             {questionParts.map((part, index) => (
               <div key={index} className="inline">
-                <span className="text-foreground">{part}</span>
+                <span>{part}</span>
                 {index < blanksCount && (
-                  <span className="inline-block mx-2 relative">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-2">
+                  <span className="inline-block mx-1 relative">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex items-center gap-1">
                         <Input
                           id={`blank-${index}`}
                           value={userAnswers[index] || ''}
@@ -98,27 +98,22 @@ export function FillBlankQuestion({
                           onKeyPress={(e) => handleKeyPress(e, index)}
                           disabled={localHasAnswered || isValidating}
                           className={cn(
-                            "inline-block w-28 h-10 text-center text-sm border-2 bg-input/50 font-gaming",
+                            "inline-block w-24 h-8 text-center text-sm border-2",
                             localHasAnswered && perBlankResults ? 
-                              (perBlankResults[index] ? 
-                                "border-accent glow-green bg-accent/10" : 
-                                "border-destructive glow-blue bg-destructive/10"
-                              ) :
-                              "border-border hover:border-primary/50 focus:border-primary glow-blue"
+                              (perBlankResults[index] ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50") :
+                              ""
                           )}
                           placeholder="..."
                           autoComplete="off"
                         />
                         {/* Ice pick indicator for correct answers */}
                         {localHasAnswered && perBlankResults && perBlankResults[index] && (
-                          <span className="ml-1 text-gaming-orange animate-pulse">⛏️</span>
+                          <span className="ml-1 text-orange-500">⛏️</span>
                         )}
                        </div>
                        {/* Correction below when wrong */}
                        {localHasAnswered && perBlankResults && correctAnswers && !perBlankResults[index] && (
-                         <div className="text-xs mt-1 text-destructive font-medium glass-effect px-2 py-1 rounded">
-                           Σωστό: <span className="font-bold text-accent">{correctAnswers[index]}</span>
-                         </div>
+                         <div className="text-xs mt-1 text-red-600">Σωστό: <span className="font-semibold">{correctAnswers[index]}</span></div>
                        )}
                      </div>
                   </span>
@@ -128,24 +123,24 @@ export function FillBlankQuestion({
           </div>
           
           {/* Action buttons */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-3">
             {!localHasAnswered && (
               <>
                 <Button
                   onClick={handleSubmit}
                   disabled={!allFieldsFilled || isValidating}
-                  className="btn-gaming font-gaming font-bold"
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
-                  {isValidating ? '🔄 Επεξεργασία...' : '📤 Υποβολή Απάντησης'}
+                  {isValidating ? 'Επεξεργασία...' : 'Υποβολή Απάντησης'}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setShowHint(!showHint)}
-                  className="border-secondary text-secondary hover:bg-secondary/10 hover:text-secondary-foreground glow-purple font-gaming"
+                  className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
                   disabled={isValidating}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
-                  {showHint ? '🙈 Απόκρυψη' : '💡 Υπόδειξη'}
+                  {showHint ? 'Απόκρυψη' : 'Υπόδειξη'}
                 </Button>
               </>
             )}
@@ -153,74 +148,74 @@ export function FillBlankQuestion({
           
           {/* Hint */}
           {showHint && !localHasAnswered && (
-            <div className="glass-effect rounded-xl p-6 animate-scale-in">
-              <p className="text-sm text-gaming-orange font-gaming">
-                <strong className="text-gaming-orange-glow">💡 Υπόδειξη:</strong> Αριθμός κενών: {blanksCount}. 
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Υπόδειξη:</strong> Αριθμός κενών: {blanksCount}. 
                 Προσπαθήστε να θυμηθείτε τους βασικούς ορισμούς από το μάθημα ΑΕΠΠ.
               </p>
             </div>
           )}
           
-          {/* Feedback */}
-          {localHasAnswered && feedback && (
-            <div className={cn(
-              "border rounded-xl p-6 card-gaming animate-fade-in-up",
-              feedback.includes('Σωστά') || feedback.includes('Σωστό')
-                ? "border-accent/50 glow-green" 
-                : feedback.includes('Σχεδόν σωστό')
-                ? "border-gaming-orange/50 glow-blue"
-                : "border-destructive/50 glow-blue"
-            )}>
-              <div className="flex items-center gap-3 mb-4">
-                {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
-                  <>
-                    <CheckCircle className="h-6 w-6 text-accent animate-pulse" />
-                    <Badge variant="default" className="bg-gradient-accent text-accent-foreground font-gaming glow-green">
-                      ✨ Σωστή απάντηση!
-                    </Badge>
-                  </>
-                ) : feedback.includes('Σχεδόν σωστό') ? (
-                  <>
-                    <CheckCircle className="h-6 w-6 text-gaming-orange animate-pulse" />
-                    <Badge variant="default" className="bg-gaming-orange text-gaming-orange-foreground font-gaming">
-                      🎯 Σχεδόν σωστό!
-                    </Badge>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-6 w-6 text-destructive animate-pulse" />
-                    <Badge variant="destructive" className="font-gaming glow-blue">
-                      ⚡ Μερική απάντηση
-                    </Badge>
-                  </>
-                )}
-              </div>
+           {/* Feedback */}
+           {localHasAnswered && feedback && (
+             <div className={cn(
+               "border rounded-md p-4",
+               feedback.includes('Σωστά') || feedback.includes('Σωστό')
+                 ? "bg-green-50 border-green-200" 
+                 : feedback.includes('Σχεδόν σωστό')
+                 ? "bg-yellow-50 border-yellow-200"
+                 : "bg-red-50 border-red-200"
+             )}>
+               <div className="flex items-center gap-2 mb-2">
+                 {feedback.includes('Σωστά') || feedback.includes('Σωστό') ? (
+                   <>
+                     <CheckCircle className="h-5 w-5 text-green-600" />
+                     <Badge variant="default" className="bg-green-600">
+                       Σωστή απάντηση!
+                     </Badge>
+                   </>
+                 ) : feedback.includes('Σχεδόν σωστό') ? (
+                   <>
+                     <CheckCircle className="h-5 w-5 text-yellow-600" />
+                     <Badge variant="default" className="bg-yellow-600">
+                       Σχεδόν σωστό!
+                     </Badge>
+                   </>
+                 ) : (
+                   <>
+                     <XCircle className="h-5 w-5 text-red-600" />
+                     <Badge variant="destructive">
+                       Μερική απάντηση
+                     </Badge>
+                   </>
+                 )}
+               </div>
               
               {/* Partial credit display */}
               {typeof correctCount === 'number' && typeof totalBlanks === 'number' && (
-                <div className="mb-4 p-4 glass-effect rounded-xl">
-                  <p className="text-sm text-primary font-bold font-gaming mb-2">
+                <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-800 font-medium">
                     ⛏️ Καρφώθηκαν {correctCount}/{totalBlanks} αγκίστρια
                   </p>
-                  <div className="progress-gaming rounded-full h-3">
+                  <div className="w-full bg-blue-200 rounded-full h-2 mt-1">
                     <div 
-                      className="progress-fill h-3 rounded-full transition-all duration-1000 animate-shimmer"
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${(correctCount / totalBlanks) * 100}%` }}
                     />
                   </div>
                 </div>
               )}
               
-              <p className="text-sm text-muted-foreground mb-4 font-gaming">{feedback}</p>
+              <p className="text-sm text-gray-700 mb-3">{feedback}</p>
               
               
               {onNextQuestion && (
-                <div className="mt-6 text-center">
+                <div className="mt-4 text-center">
                   <Button
                     onClick={onNextQuestion}
-                    className="btn-gaming font-gaming font-bold animate-breath"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    ➡️ Επόμενη Ερώτηση
+                    Επόμενη Ερώτηση
                   </Button>
                 </div>
               )}
