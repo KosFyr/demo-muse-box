@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
+import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { NeonButton } from '@/components/ui/NeonButton';
+import { CircularProgressRing } from '@/components/ui/CircularProgressRing';
 import { IcebergGameBoard } from './IcebergGameBoard';
 import { FillBlankQuestion } from './FillBlankQuestion';
 import { useQuestions, Question } from '@/hooks/useQuestions';
@@ -186,135 +190,178 @@ export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd
 
   if (loading || (!currentQuestion && !error)) {
     return (
-      <div className="text-center text-white">
-        <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
-        <p>{loading ? 'Φόρτωση ερωτήσεων...' : 'Φόρτωση ερώτησης...'}</p>
-      </div>
+      <NeonBackdrop>
+        <div className="min-h-screen flex items-center justify-center">
+          <GlassCard glowColor="cyan" className="text-center">
+            <div className="w-16 h-16 mx-auto border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mb-4"></div>
+            <p className="text-white font-exo text-lg">{loading ? 'Loading Questions... 🎮' : 'Loading Challenge... ⚡'}</p>
+          </GlassCard>
+        </div>
+      </NeonBackdrop>
     );
   }
 
   if (error || questions.length === 0) {
     return (
-      <div className="text-center text-white space-y-4">
-        <div className="text-xl">⚠️ Πρόβλημα φόρτωσης</div>
-        <p className="text-lg">Δεν ήταν δυνατή η φόρτωση των ερωτήσεων.</p>
-        <Button
-          onClick={refetch}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Προσπάθεια ξανά
-        </Button>
-      </div>
+      <NeonBackdrop>
+        <div className="min-h-screen flex items-center justify-center">
+          <GlassCard glowColor="pink" className="text-center space-y-4">
+            <div className="text-6xl mb-4">⚠️</div>
+            <div className="text-xl font-orbitron font-bold text-white">Connection Failed</div>
+            <p className="text-lg text-white/70 font-exo">Unable to load game challenges.</p>
+            <NeonButton
+              variant="lime"
+              onClick={refetch}
+            >
+              Retry Connection 🔄
+            </NeonButton>
+          </GlassCard>
+        </div>
+      </NeonBackdrop>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Game Board */}
-      <IcebergGameBoard
-        effectivePosition={gameState.currentPosition + gameState.currentLevelProgress}
-        playerData={playerData}
-        isClimbing={isClimbing}
-        isSlipping={isSlipping}
-      />
-
-      {/* Gaming Score HUD */}
-      <div className="text-center text-white space-y-3">
-        <div className="card-gaming p-4 rounded-2xl border border-primary/30 glow-cyan">
-          <div className="text-3xl font-black gaming-title">
-            Lvl <span className="text-accent">{gameState.currentPosition}</span>/15 🎮
-          </div>
-          <div className="text-lg font-bold text-white/90">
-            Progress: <span className="text-primary">{(gameState.currentPosition + gameState.currentLevelProgress).toFixed(1)}</span>/15
-          </div>
-          <div className="text-sm text-white/70 font-medium">
-            Score: <span className="text-gaming-success">{gameState.correctAnswers}</span>W | <span className="text-white/60">{gameState.totalQuestions}</span>Q
-          </div>
+    <NeonBackdrop>
+      <div className="min-h-screen p-4 space-y-6">
+        {/* Game Board */}
+        <div className="flex justify-center">
+          <GlassCard glowColor="cyan" intensity="high" className="relative">
+            <IcebergGameBoard
+              effectivePosition={gameState.currentPosition + gameState.currentLevelProgress}
+              playerData={playerData}
+              isClimbing={isClimbing}
+              isSlipping={isSlipping}
+            />
+          </GlassCard>
         </div>
-      </div>
 
-      {/* Question Section */}
-      {currentQuestion.question_type === 'fill-in-the-blank' ? (
-        <FillBlankQuestion
-          questionText={currentQuestion.question_text}
-          onAnswer={(userAnswers) => handleAnswer('', userAnswers)}
-          feedback={showFeedback ? feedback : undefined}
-          hasAnswered={showFeedback}
-          onNextQuestion={showFeedback ? handleNextQuestion : undefined}
-          isValidating={validating}
-          perBlankResults={hasAnswered ? lastResult?.perBlankResults : undefined}
-          correctCount={hasAnswered ? lastResult?.correctCount : undefined}
-          totalBlanks={hasAnswered ? lastResult?.totalBlanks : undefined}
-          correctAnswers={hasAnswered ? lastResult?.correctAnswers : undefined}
-        />
-      ) : (
-        <div className="card-gaming backdrop-blur-md rounded-2xl p-6 border border-primary/20 glow-cyan animate-slide-in-gaming">
-          <div className="space-y-6">
-            <div className="text-center">
-              <span className="inline-block px-4 py-2 card-gaming rounded-full border border-accent/30 text-accent font-bold glow-lime">
-                 {currentQuestion.question_type === 'true-false' ? 'T/F 🤔' : 
-                  currentQuestion.question_type === 'multiple-choice' ? 'Multiple Choice 📝' : 'Match Up 🔗'}
-              </span>
+        {/* Gaming HUD */}
+        <div className="max-w-4xl mx-auto">
+          <GlassCard glowColor="lime" className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <CircularProgressRing
+                  progress={(gameState.currentPosition / 15) * 100}
+                  level={gameState.currentPosition + 1}
+                  maxLevel={15}
+                  size={100}
+                />
+                
+                <div className="text-white">
+                  <h3 className="font-orbitron font-bold text-xl mb-1">
+                    Level {gameState.currentPosition + 1}
+                  </h3>
+                  <p className="text-white/70 font-exo">
+                    Score: <span className="text-cyan-400 font-bold">{gameState.correctAnswers}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-right text-white/80 font-exo">
+                <div className="text-sm">Progress</div>
+                <div className="text-lg font-bold text-cyan-400">
+                  {Math.round(gameState.currentLevelProgress * 100)}%
+                </div>
+              </div>
             </div>
-            
-            <h3 className="text-xl text-white text-center font-bold gaming-title">
-              {currentQuestion.question_text}
-            </h3>
+          </GlassCard>
 
-            {/* Gaming Answer Options */}
-            <div className="space-y-4">
-              {currentQuestion.question_type === 'true-false' ? (
-                <div className="flex justify-center space-x-6">
-                  <Button
-                    onClick={() => handleAnswer('true')}
-                    disabled={isAnswering}
-                    className="btn-gaming bg-gradient-to-r from-gaming-success to-accent hover:scale-110 transform transition-all duration-300 glow-lime text-white border-0 px-10 py-4 font-black"
-                  >
-                    True ✓
-                  </Button>
-                  <Button
-                    onClick={() => handleAnswer('false')}
-                    disabled={isAnswering}
-                    className="btn-gaming bg-gradient-to-r from-gaming-error to-secondary hover:scale-110 transform transition-all duration-300 glow-pink text-white border-0 px-10 py-4 font-black"
-                  >
-                    False ✗
-                  </Button>
-                </div>
+          {/* Question Display */}
+          {currentQuestion && (
+            <div className="mb-6">
+              {currentQuestion.question_type === 'fill-in-the-blank' ? (
+                <FillBlankQuestion
+                  questionText={currentQuestion.question_text}
+                  explanation={currentQuestion.explanation}
+                  onAnswer={(userAnswers: string[]) => handleAnswer('', userAnswers)}
+                  feedback={feedback}
+                  hasAnswered={hasAnswered}
+                  onNextQuestion={hasAnswered ? () => loadNextQuestion() : undefined}
+                  isValidating={isAnswering}
+                   perBlankResults={lastResult?.perBlankResults}
+                   correctCount={lastResult?.correctCount}
+                   totalBlanks={lastResult?.totalBlanks}
+                   correctAnswers={lastResult?.correctAnswers}
+                />
               ) : (
-                <div className="space-y-3">
-                  {currentQuestion.options?.map((option, index) => (
-                    <Button
-                      key={index}
-                      onClick={() => handleAnswer(option)}
-                      disabled={isAnswering}
-                      className="w-full btn-gaming border-primary/30 text-white hover:bg-primary/20 hover:scale-105 transform transition-all duration-300 font-medium py-4"
-                    >
-                      {option}
-                    </Button>
-                  ))}
-                </div>
+                <GlassCard glowColor="pink">
+                  <div className="text-center space-y-6">
+                    <h2 className="text-2xl md:text-3xl font-orbitron font-bold text-white">
+                      {currentQuestion.question_text}
+                    </h2>
+
+                    {currentQuestion.question_type === 'multiple-choice' && currentQuestion.options && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {currentQuestion.options.map((option, index) => (
+                          <NeonButton
+                            key={index}
+                            variant={selectedAnswer === option ? 'cyan' : 'purple'}
+                            onClick={() => !isAnswering && setSelectedAnswer(option)}
+                            disabled={isAnswering}
+                            className="p-4 text-left"
+                          >
+                            {option}
+                          </NeonButton>
+                        ))}
+                      </div>
+                    )}
+
+                    {currentQuestion.question_type === 'true-false' && (
+                      <div className="flex gap-4 justify-center">
+                        <NeonButton
+                          variant={selectedAnswer === 'true' ? 'lime' : 'purple'}
+                          onClick={() => !isAnswering && setSelectedAnswer('true')}
+                          disabled={isAnswering}
+                          size="lg"
+                        >
+                          True ✅
+                        </NeonButton>
+                        <NeonButton
+                          variant={selectedAnswer === 'false' ? 'pink' : 'purple'}
+                          onClick={() => !isAnswering && setSelectedAnswer('false')}
+                          disabled={isAnswering}
+                          size="lg"
+                        >
+                          False ❌
+                        </NeonButton>
+                      </div>
+                    )}
+
+                    {!hasAnswered && selectedAnswer && (
+                      <div className="text-center">
+                        <NeonButton
+                          variant="lime"
+                          onClick={() => handleAnswer(selectedAnswer)}
+                          disabled={isAnswering}
+                          size="lg"
+                        >
+                          {isAnswering ? 'Processing... ⚡' : 'Submit Answer ⚡'}
+                        </NeonButton>
+                      </div>
+                    )}
+
+                    {hasAnswered && feedback && (
+                      <GlassCard glowColor="cyan" className="text-center">
+                        <p className="text-white font-exo text-lg">{feedback}</p>
+                        <div className="mt-4">
+                          <NeonButton
+                            variant="cyan"
+                            onClick={() => loadNextQuestion()}
+                            size="lg"
+                          >
+                            Next Challenge 🚀
+                          </NeonButton>
+                        </div>
+                      </GlassCard>
+                    )}
+                  </div>
+                </GlassCard>
               )}
             </div>
-
-            {/* Gaming Feedback */}
-            {showFeedback && (
-              <div className="text-center space-y-6 animate-slide-in-gaming">
-                <div className={`text-xl font-black gaming-title ${
-                  feedback.includes('Σωστά') ? 'text-gaming-success glow-lime animate-bounce' : 'text-gaming-error animate-cyber-shake'
-                }`}>
-                  {feedback}
-                </div>
-                <Button
-                  onClick={handleNextQuestion}
-                  className="btn-gaming bg-gradient-to-r from-accent to-primary hover:scale-110 transform transition-all duration-300 glow-cyan font-black px-8 py-4"
-                >
-                  Next ➡️
-                </Button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </NeonBackdrop>
   );
 };

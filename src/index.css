@@ -195,6 +195,14 @@
     animation: pulse-gaming 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
+  .glow-soft {
+    box-shadow: 0 0 20px rgba(0, 201, 255, 0.3), 0 0 40px rgba(0, 201, 255, 0.1);
+  }
+
+  .text-shadow-neon {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+
   @keyframes pulse-gaming {
     0%, 100% {
       opacity: 1;

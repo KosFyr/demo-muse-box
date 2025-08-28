@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameContainer } from '@/components/game/GameContainer';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
+import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
+import { NeonButton } from '@/components/ui/NeonButton';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -16,29 +17,30 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center">
-        <div className="text-center text-white">
-          <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-white rounded-full animate-spin mb-4"></div>
-          <p>Φόρτωση...</p>
+      <NeonBackdrop>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center text-white">
+            <div className="w-16 h-16 mx-auto border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mb-4"></div>
+            <p className="font-exo">Loading Game... 🎮</p>
+          </div>
         </div>
-      </div>
+      </NeonBackdrop>
     );
   }
 
   if (!user) {
-    return null; // Will redirect to auth
+    return null;
   }
 
   return (
     <div className="relative">
       <div className="absolute top-4 right-4 z-10">
-        <Button
+        <NeonButton
           onClick={signOut}
-          variant="outline"
-          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+          variant="purple"
         >
-          Αποσύνδεση
-        </Button>
+          Logout 🚪
+        </NeonButton>
       </div>
       <GameContainer />
     </div>
