@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { NeonButton } from '@/components/ui/NeonButton';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -133,119 +134,137 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white/10 backdrop-blur-md border-white/20">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">
-            {isPasswordReset ? 'Νέος Κωδικός' : 
-             (isForgotPassword ? 'Επαναφορά Κωδικού' : 
-              (isLogin ? 'Είσοδος' : 'Εγγραφή'))}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && !isForgotPassword && !isPasswordReset && (
-              <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-white">
-                  Όνομα χρήστη
-                </Label>
-                <Input
-                  id="displayName"
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  required={!isLogin && !isForgotPassword}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                  placeholder="Πώς θα σε φωνάζουμε;"
-                />
-              </div>
-            )}
-            
-            {!isPasswordReset && (
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                  placeholder="Το email σου"
-                />
-              </div>
-            )}
-            
-            {!isForgotPassword && (
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">
-                  Κωδικός
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required={!isForgotPassword}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                  placeholder="Ο κωδικός σου"
-                />
-              </div>
-            )}
-            
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-white text-blue-600 hover:bg-white/90 font-semibold"
-            >
-              {loading ? 'Φόρτωση...' : (
-                isPasswordReset ? 'Αλλαγή Κωδικού' :
-                (isForgotPassword ? 'Στείλε Email Επαναφοράς' : 
-                 (isLogin ? 'Είσοδος' : 'Εγγραφή'))
-              )}
-            </Button>
-          </form>
-          
-          <div className="mt-4 text-center space-y-2">
-            {!isForgotPassword && !isPasswordReset && isLogin && (
-              <button
-                onClick={() => {
-                  setIsForgotPassword(true);
-                  setPassword('');
-                }}
-                className="text-white/80 hover:text-white underline block w-full"
-              >
-                Ξέχασες τον κωδικό σου;
-              </button>
-            )}
-            
-            {!isPasswordReset && (
-              <button
-                onClick={() => {
-                  if (isForgotPassword) {
-                    setIsForgotPassword(false);
-                    setIsLogin(true);
-                  } else {
-                    setIsLogin(!isLogin);
-                  }
-                  setEmail('');
-                  setPassword('');
-                  setDisplayName('');
-                }}
-                className="text-white/80 hover:text-white underline"
-              >
-                {isForgotPassword ? 'Πίσω στην είσοδο' : (
-                  isLogin 
-                    ? 'Δεν έχεις λογαριασμό; Κάνε εγγραφή' 
-                    : 'Έχεις ήδη λογαριασμό; Κάνε είσοδος'
-                )}
-              </button>
-            )}
+    <NeonBackdrop enableMatrix={true}>
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          {/* Game Title */}
+          <div className="text-center mb-8">
+            <h1 className="font-orbitron font-black text-4xl md:text-5xl mb-4">
+              <span className="text-white">CODE</span>{' '}
+              <span className="text-cyan-400 text-shadow-neon animate-neon-flicker">QUEST</span>
+            </h1>
+            <p className="text-white/60 font-exo">Gaming Quiz Adventure 🎮</p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <GlassCard glowColor="cyan" intensity="high">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-white font-orbitron">
+                {isPasswordReset ? 'ΝΕΟΣ ΚΩΔΙΚΟΣ' : 
+                 (isForgotPassword ? 'ΕΠΑΝΑΦΟΡΑ ΚΩΔΙΚΟΥ' : 
+                  (isLogin ? 'ΕΙΣΟΔΟΣ' : 'ΕΓΓΡΑΦΗ'))}
+              </h2>
+            </div>
+
+            <form onSubmit={handleAuth} className="space-y-4">
+              {!isLogin && !isForgotPassword && !isPasswordReset && (
+                <div className="space-y-2">
+                  <Label htmlFor="displayName" className="text-white font-exo">
+                    Όνομα χρήστη
+                  </Label>
+                  <Input
+                    id="displayName"
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    required={!isLogin && !isForgotPassword}
+                    className="bg-white/10 border-cyan-500/30 text-white placeholder:text-white/60 focus:border-cyan-400 font-exo"
+                    placeholder="Πώς θα σε φωνάζουμε;"
+                  />
+                </div>
+              )}
+              
+              {!isPasswordReset && (
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-white font-exo">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-white/10 border-cyan-500/30 text-white placeholder:text-white/60 focus:border-cyan-400 font-exo"
+                    placeholder="Το email σου"
+                  />
+                </div>
+              )}
+              
+              {!isForgotPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-white font-exo">
+                    Κωδικός
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required={!isForgotPassword}
+                    className="bg-white/10 border-cyan-500/30 text-white placeholder:text-white/60 focus:border-cyan-400 font-exo"
+                    placeholder="Ο κωδικός σου"
+                  />
+                </div>
+              )}
+              
+              <NeonButton
+                type="submit"
+                disabled={loading}
+                variant="cyan"
+                size="lg"
+                className="w-full font-orbitron font-bold"
+              >
+                {loading ? 'ΦΟΡΤΩΣΗ...' : (
+                  isPasswordReset ? 'ΑΛΛΑΓΗ ΚΩΔΙΚΟΥ' :
+                  (isForgotPassword ? 'ΣΤΕΙΛΕ EMAIL' : 
+                   (isLogin ? 'ΕΙΣΟΔΟΣ' : 'ΕΓΓΡΑΦΗ'))
+                )}
+              </NeonButton>
+            </form>
+            
+            <div className="mt-6 text-center space-y-3">
+              {!isForgotPassword && !isPasswordReset && isLogin && (
+                <button
+                  onClick={() => {
+                    setIsForgotPassword(true);
+                    setPassword('');
+                  }}
+                  className="text-cyan-400/80 hover:text-cyan-400 underline block w-full font-exo transition-colors"
+                >
+                  Ξέχασες τον κωδικό σου;
+                </button>
+              )}
+              
+              {!isPasswordReset && (
+                <button
+                  onClick={() => {
+                    if (isForgotPassword) {
+                      setIsForgotPassword(false);
+                      setIsLogin(true);
+                    } else {
+                      setIsLogin(!isLogin);
+                    }
+                    setEmail('');
+                    setPassword('');
+                    setDisplayName('');
+                  }}
+                  className="text-white/80 hover:text-white underline font-exo transition-colors"
+                >
+                  {isForgotPassword ? 'Πίσω στην είσοδο' : (
+                    isLogin 
+                      ? 'Δεν έχεις λογαριασμό; Κάνε εγγραφή' 
+                      : 'Έχεις ήδη λογαριασμό; Κάνε είσοδος'
+                  )}
+                </button>
+              )}
+            </div>
+          </GlassCard>
+
+          {/* Decorative Elements */}
+          <div className="absolute top-20 left-10 text-cyan-400/20 text-4xl animate-float">⚡</div>
+          <div className="absolute bottom-20 right-10 text-pink-400/20 text-3xl animate-float" style={{ animationDelay: '1s' }}>🔥</div>
+        </div>
+      </div>
+    </NeonBackdrop>
   );
 }

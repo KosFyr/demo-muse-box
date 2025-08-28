@@ -1,6 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
 import { Trophy, Medal, Target, RotateCcw, Home } from 'lucide-react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { NeonButton } from '@/components/ui/NeonButton';
 
 interface EndScreenProps {
   gameState: GameState;
@@ -26,24 +27,28 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
   };
 
   const getScoreColor = () => {
-    if (accuracy >= 80) return "text-green-300";
-    if (accuracy >= 60) return "text-yellow-300";
-    return "text-red-300";
+    if (accuracy >= 80) return "text-lime-400";
+    if (accuracy >= 60) return "text-cyan-400";
+    return "text-pink-400";
   };
 
   return (
-    <div className="text-center space-y-8 p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl">
+    <GlassCard glowColor={isWinner ? "lime" : "pink"} intensity="high" className="text-center space-y-8">
       {/* Header */}
       <div className="space-y-4">
         <div className="text-6xl mb-4">
           {isWinner ? '🏆' : '🎯'}
         </div>
         
-        <h2 className="text-4xl font-bold text-white drop-shadow-lg">
-          {isWinner ? 'GG! You Won! 🏆' : 'Game Over 😤'}
+        <h2 className="text-4xl font-bold text-white drop-shadow-lg font-orbitron">
+          {isWinner ? (
+            <>GG! <span className="text-lime-400 animate-neon-flicker">YOU WON!</span> 🏆</>
+          ) : (
+            <>GAME <span className="text-pink-400 animate-neon-flicker">OVER</span> 😤</>
+          )}
         </h2>
         
-        <p className="text-xl text-white/90">
+        <p className="text-xl text-white/90 font-exo">
           {getPerformanceMessage()}
         </p>
       </div>
@@ -111,86 +116,87 @@ export const EndScreen = ({ gameState, playerData, onPlayAgain, onHome }: EndScr
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white/20 rounded-lg p-4">
+        <GlassCard glowColor="cyan" className="p-4">
           <div className="flex items-center justify-center mb-2">
-            <Target className="w-6 h-6 text-white" />
+            <Target className="w-6 h-6 text-cyan-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-white font-orbitron">
             {gameState.currentPosition}
           </div>
-          <div className="text-white/80 text-sm">
-            Final Lvl 🎯
+          <div className="text-white/80 text-sm font-exo">
+            FINAL LVL 🎯
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-white/20 rounded-lg p-4">
+        <GlassCard glowColor="lime" className="p-4">
           <div className="flex items-center justify-center mb-2">
-            <Trophy className="w-6 h-6 text-green-400" />
+            <Trophy className="w-6 h-6 text-lime-400" />
           </div>
-          <div className="text-2xl font-bold text-green-300">
+          <div className="text-2xl font-bold text-lime-400 font-orbitron">
             {gameState.correctAnswers}
           </div>
-          <div className="text-white/80 text-sm">
-            Right Answers 🎯
+          <div className="text-white/80 text-sm font-exo">
+            RIGHT ANSWERS 🎯
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-white/20 rounded-lg p-4">
+        <GlassCard glowColor="purple" className="p-4">
           <div className="flex items-center justify-center mb-2">
-            <Medal className="w-6 h-6 text-blue-400" />
+            <Medal className="w-6 h-6 text-purple-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
+          <div className="text-2xl font-bold text-white font-orbitron">
             {gameState.totalQuestions}
           </div>
-          <div className="text-white/80 text-sm">
-            Total Qs 📊
+          <div className="text-white/80 text-sm font-exo">
+            TOTAL QS 📊
           </div>
-        </div>
+        </GlassCard>
 
-        <div className="bg-white/20 rounded-lg p-4">
+        <GlassCard glowColor="pink" className="p-4">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-6 h-6 text-yellow-400">🎯</div>
+            <div className="w-6 h-6 text-pink-400">🎯</div>
           </div>
-          <div className={`text-2xl font-bold ${getScoreColor()}`}>
+          <div className={`text-2xl font-bold font-orbitron ${getScoreColor()}`}>
             {accuracy}%
           </div>
-          <div className="text-white/80 text-sm">
-            Accuracy 📈
+          <div className="text-white/80 text-sm font-exo">
+            ACCURACY 📈
           </div>
-        </div>
+        </GlassCard>
       </div>
 
       {/* Player Name */}
-      <div className="text-xl text-white/90">
-        Player: <span className="font-bold text-white">{playerData.name}</span> 🎮
+      <div className="text-xl text-white/90 font-exo">
+        PLAYER: <span className="font-bold text-white font-orbitron">{playerData.name}</span> 🎮
       </div>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6">
-        <Button 
+        <NeonButton 
           onClick={onPlayAgain}
+          variant="success"
           size="lg"
-          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-xl px-8"
+          className="px-8 font-orbitron font-bold"
         >
           <RotateCcw className="w-5 h-5 mr-2" />
-          Run It Back 🔄
-        </Button>
+          RUN IT BACK 🔄
+        </NeonButton>
         
-        <Button 
+        <NeonButton 
           onClick={onHome}
+          variant="purple"
           size="lg"
-          variant="outline"
-          className="bg-white/20 border-white/40 text-white hover:bg-white/30 px-8"
+          className="px-8 font-orbitron font-bold"
         >
           <Home className="w-5 h-5 mr-2" />
-          Home 🏠
-        </Button>
+          HOME 🏠
+        </NeonButton>
       </div>
 
       {/* Motivational message */}
-      <div className="text-white/70 text-sm italic max-w-md mx-auto">
+      <div className="text-white/70 text-sm italic max-w-md mx-auto font-exo">
         "Κάθε λάθος είναι μια ευκαιρία να μάθεις κάτι νέο. Συνέχισε να προσπαθείς!"
       </div>
-    </div>
+    </GlassCard>
   );
 };

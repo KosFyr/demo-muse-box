@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PlayerData } from './GameContainer';
@@ -8,6 +7,8 @@ import { Upload, Camera, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { NeonButton } from '@/components/ui/NeonButton';
 
 interface PhotoUploadScreenProps {
   onNext: () => void;
@@ -149,12 +150,12 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
   const canProceed = playerData.name.trim() && (previewUrl || !user);
 
   return (
-    <div className="text-center space-y-8 p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl">
+    <GlassCard glowColor="pink" intensity="high" className="text-center space-y-8">
       <div className="space-y-4">
-        <h2 className="text-4xl font-bold text-white drop-shadow-lg">
-          Φτιάξε το drip σου 👕👟
+        <h2 className="text-4xl font-bold text-white drop-shadow-lg font-orbitron">
+          ΦΤΙΑΞΕ ΤΟ <span className="text-pink-400 animate-neon-flicker">DRIP</span> ΣΟΥ 👕👟
         </h2>
-        <p className="text-lg text-white/80">
+        <p className="text-lg text-white/80 font-exo">
           Ανέβασε μια φωτογραφία σου για να δημιουργήσεις το stick figure avatar σου
         </p>
       </div>
@@ -162,8 +163,8 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
       <div className="space-y-6">
         {/* Name Input */}
         <div className="space-y-2">
-          <Label htmlFor="player-name" className="text-white text-lg">
-            Όνομα Παίκτη
+          <Label htmlFor="player-name" className="text-white text-lg font-orbitron">
+            ΟΝΟΜΑ ΠΑΙΚΤΗ
           </Label>
           <Input
             id="player-name"
@@ -171,16 +172,16 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
             placeholder="Εισάγετε το όνομά σας"
             value={playerData.name}
             onChange={(e) => onPlayerDataUpdate({ name: e.target.value })}
-            className="text-center text-lg py-3 bg-white/20 border-white/30 text-white placeholder:text-white/60"
+            className="text-center text-lg py-3 bg-white/10 border-pink-500/30 text-white placeholder:text-white/60 focus:border-pink-400 font-exo"
           />
         </div>
 
         {/* Photo Upload Area */}
         <div className="space-y-4">
-          <Label className="text-white text-lg">Drop a selfie 📸</Label>
+          <Label className="text-white text-lg font-orbitron">DROP A SELFIE 📸</Label>
           
           <div
-            className="border-2 border-dashed border-white/40 rounded-2xl p-8 bg-white/10 transition-all hover:bg-white/20 cursor-pointer"
+            className="border-2 border-dashed border-pink-500/40 rounded-2xl p-8 bg-white/5 transition-all hover:bg-white/10 hover:border-pink-400/60 cursor-pointer"
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() => fileInputRef.current?.click()}
@@ -195,8 +196,8 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
             
             {uploading ? (
               <div className="space-y-4">
-                <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-                <p className="text-white">Επεξεργασία φωτογραφίας...</p>
+                <div className="w-16 h-16 mx-auto border-4 border-pink-500/30 border-t-pink-400 rounded-full animate-spin"></div>
+                <p className="text-white font-exo">Επεξεργασία φωτογραφίας...</p>
               </div>
             ) : previewUrl ? (
               <div className="space-y-4">
@@ -208,15 +209,14 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                   />
                 </div>
                 <div className="flex items-center gap-2 justify-center">
-                  <Button
+                  <NeonButton
                     onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
+                    variant="pink"
                     size="sm"
-                    className="bg-white/20 border-white/40 text-white hover:bg-white/30"
                   >
                     <RefreshCw className="w-4 h-4 mr-1" />
-                    Αλλαγή Avatar
-                  </Button>
+                    ΑΛΛΑΓΗ AVATAR
+                  </NeonButton>
                 </div>
               </div>
             ) : (
@@ -226,8 +226,8 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                   <Camera className="w-12 h-12 text-white/60" />
                 </div>
                 <div className="text-white/80">
-                  <p className="text-lg font-medium">Κάντε κλικ ή σύρετε μια φωτογραφία εδώ</p>
-                  <p className="text-sm">JPG, PNG, GIF - Μέγεθος έως 10MB</p>
+                  <p className="text-lg font-medium font-exo">Κάντε κλικ ή σύρετε μια φωτογραφία εδώ</p>
+                  <p className="text-sm font-exo">JPG, PNG, GIF - Μέγεθος έως 10MB</p>
                 </div>
               </div>
             )}
@@ -236,15 +236,15 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
 
         {/* Stick Figure Color Selection */}
         <div className="space-y-4">
-          <Label className="text-white text-lg">Χρώμα Stick Figure</Label>
+          <Label className="text-white text-lg font-orbitron">ΧΡΩΜΑ STICK FIGURE</Label>
           <div className="flex gap-6 justify-center">
             {/* Classic Stick Figure */}
             <button
               onClick={() => handleStickFigureColorChange('classic')}
               className={`p-4 rounded-lg border-2 transition-all ${
                 stickFigureColor === 'classic' 
-                  ? 'border-white bg-white/20' 
-                  : 'border-white/40 bg-white/10 hover:bg-white/20'
+                  ? 'border-cyan-400 bg-cyan-500/20 shadow-cyan-500/40 shadow-lg' 
+                  : 'border-white/40 bg-white/10 hover:bg-white/20 hover:border-cyan-400/60'
               }`}
             >
               <div className="flex flex-col items-center space-y-3">
@@ -286,7 +286,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                     <line x1="20" y1="38" x2="24" y2="50" stroke="#333" strokeWidth="1" />
                   </svg>
                 </div>
-                <div className="text-white text-sm font-medium">OG</div>
+                <div className="text-white text-sm font-bold font-orbitron">OG</div>
               </div>
             </button>
             
@@ -295,8 +295,8 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
               onClick={() => handleStickFigureColorChange('pink')}
               className={`p-4 rounded-lg border-2 transition-all ${
                 stickFigureColor === 'pink' 
-                  ? 'border-white bg-white/20' 
-                  : 'border-white/40 bg-white/10 hover:bg-white/20'
+                  ? 'border-pink-400 bg-pink-500/20 shadow-pink-500/40 shadow-lg' 
+                  : 'border-white/40 bg-white/10 hover:bg-white/20 hover:border-pink-400/60'
               }`}
             >
               <div className="flex flex-col items-center space-y-3">
@@ -338,7 +338,7 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                     <line x1="20" y1="38" x2="24" y2="50" stroke="#F472B6" strokeWidth="1" />
                   </svg>
                 </div>
-                <div className="text-white text-sm font-medium">Pinky Vibes 💖</div>
+                <div className="text-white text-sm font-bold font-orbitron">PINKY VIBES 💖</div>
               </div>
             </button>
           </div>
@@ -347,8 +347,8 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
         {/* Big Head Avatar Preview */}
         {previewUrl && (
           <div className="mt-6 flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-white mb-4">Το Big Head Avatar σας!</h3>
-            <div className="bg-white/20 backdrop-blur rounded-lg p-8">
+            <h3 className="text-lg font-semibold text-white mb-4 font-orbitron">ΤΟ BIG HEAD AVATAR ΣΑΣ!</h3>
+            <GlassCard glowColor="lime" className="p-8">
               {/* SVG Big Head Stick Figure Preview */}
               <svg viewBox="0 0 100 140" className="w-20 h-28 mx-auto">
                 <defs>
@@ -394,34 +394,33 @@ export const PhotoUploadScreen = ({ onNext, onBack, onPlayerDataUpdate, playerDa
                 <line x1="50" y1="95" x2="62" y2="125" stroke={stickFigureColor === 'pink' ? '#F472B6' : '#333'} strokeWidth="2"/>
               </svg>
               
-              <p className="text-center text-white/80 text-sm mt-4">
+              <p className="text-center text-white/80 text-sm mt-4 font-exo">
                 Κοιτάξτε αυτό το μεγάλο κεφάλι! Τέλειο για αναρρίχηση! 🧗‍♂️
               </p>
-            </div>
+            </GlassCard>
           </div>
         )}
       </div>
 
       {/* Navigation Buttons */}
       <div className="flex justify-between items-center pt-6">
-        <Button 
+        <NeonButton 
           onClick={onBack}
-          variant="outline"
+          variant="purple"
           size="lg"
-          className="bg-white/20 border-white/40 text-white hover:bg-white/30"
         >
-          ← Πίσω
-        </Button>
+          ← ΠΙΣΩ
+        </NeonButton>
         
-        <Button 
+        <NeonButton 
           onClick={onNext}
           disabled={!canProceed}
+          variant="success"
           size="lg"
-          className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-xl disabled:opacity-50"
         >
-          Game On 🎮
-        </Button>
+          GAME ON 🎮
+        </NeonButton>
       </div>
-    </div>
+    </GlassCard>
   );
 };
