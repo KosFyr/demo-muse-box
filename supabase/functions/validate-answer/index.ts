@@ -226,10 +226,15 @@ serve(async (req) => {
             error: 'Correct answers not found',
             isCorrect: false,
             similarity: 0,
+            correctAnswer: '',
+            perBlankResults: [],
+            correctCount: 0,
+            totalBlanks: 0,
+            correctAnswers: [],
             feedback: 'Σφάλμα επικύρωσης απάντησης'
           }),
           {
-            status: 400,
+            status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
@@ -304,10 +309,15 @@ serve(async (req) => {
             error: 'Question not found',
             isCorrect: false,
             similarity: 0,
+            correctAnswer: '',
+            perBlankResults: [],
+            correctCount: 0,
+            totalBlanks: 0,
+            correctAnswers: [],
             feedback: 'Σφάλμα επικύρωσης απάντησης'
           }),
           {
-            status: 400,
+            status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
