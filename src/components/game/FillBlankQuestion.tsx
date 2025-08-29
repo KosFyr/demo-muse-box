@@ -97,16 +97,43 @@ export function FillBlankQuestion({
               <div key={index} className="inline">
                 <span className="text-white/90">{part}</span>
                 {index < blanksCount && (
-                  <input
-                    id={`blank-${index}`}
-                    value={userAnswers[index] || ''}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, index)}
-                    disabled={localHasAnswered || isValidating}
-                    className="inline-block mx-2 px-3 py-2 bg-black/30 border-2 border-cyan-500/50 rounded-lg text-cyan-100 font-exo focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 backdrop-blur-sm transition-all duration-300"
-                    style={{ width: `${Math.max(80, (userAnswers[index]?.length || 3) * 12)}px` }}
-                    placeholder="..."
-                  />
+                  <div className="inline-block mx-2 relative">
+                    {/* Feedback above input */}
+                    {localHasAnswered && perBlankResults && correctAnswers && (
+                      <div className="absolute -top-8 left-0 right-0 text-center z-10">
+                        {perBlankResults[index] ? (
+                          <div className="text-emerald-400 text-sm font-bold">
+                            ✅ Σωστό
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="text-red-400 text-sm font-bold">
+                              ❌ Λάθος
+                            </div>
+                            <div className="text-yellow-300 text-xs">
+                              Σωστό: {correctAnswers[index]}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <input
+                      id={`blank-${index}`}
+                      value={userAnswers[index] || ''}
+                      onChange={(e) => handleInputChange(index, e.target.value)}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      disabled={localHasAnswered || isValidating}
+                      className={`px-3 py-2 bg-black/30 border-2 rounded-lg text-cyan-100 font-exo focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 backdrop-blur-sm transition-all duration-300 ${
+                        localHasAnswered && perBlankResults 
+                          ? perBlankResults[index] 
+                            ? 'border-emerald-400/70 bg-emerald-500/10' 
+                            : 'border-red-400/70 bg-red-500/10'
+                          : 'border-cyan-500/50'
+                      }`}
+                      style={{ width: `${Math.max(80, (userAnswers[index]?.length || 3) * 12)}px` }}
+                      placeholder="..."
+                    />
+                  </div>
                 )}
               </div>
             ))}
@@ -150,41 +177,7 @@ export function FillBlankQuestion({
 
         {/* Feedback Section */}
         {localHasAnswered && feedback && (
-          <div className="space-y-4">
-            {/* Individual Blank Results */}
-            {perBlankResults && correctAnswers && (
-              <div className="grid gap-3">
-                {userAnswers.map((answer, index) => {
-                  const isCorrect = perBlankResults[index];
-                  
-                  return (
-                    <div
-                      key={index}
-                      className={`p-4 rounded-lg border-2 transition-all duration-300 ${
-                        isCorrect
-                          ? 'border-emerald-400/50 bg-emerald-500/10 animate-pulse'
-                          : 'border-red-400/50 bg-red-500/10 animate-cyber-shake'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-white font-exo">
-                          Blank {index + 1}: <strong>{answer}</strong>
-                        </span>
-                        <span className={`text-2xl ${isCorrect ? 'animate-bounce' : ''}`}>
-                          {isCorrect ? '✅' : '❌'}
-                        </span>
-                      </div>
-                      {correctAnswers[index] && !isCorrect && (
-                        <div className="mt-2 text-sm text-yellow-300 font-exo">
-                          Correct: <strong>{correctAnswers[index]}</strong>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
+          <div className="space-y-4 mt-8">
             {/* Progress Indicator */}
             {typeof correctCount === 'number' && typeof totalBlanks === 'number' && (
               <GlassCard glowColor="cyan" className="text-center">
