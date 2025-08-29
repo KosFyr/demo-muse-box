@@ -99,22 +99,11 @@ export function FillBlankQuestion({
                 {index < blanksCount && (
                   <div className="inline-block mx-2 relative">
                     {/* Feedback above input */}
-                    {localHasAnswered && perBlankResults && correctAnswers && (
-                      <div className="absolute -top-8 left-0 right-0 text-center z-10">
-                        {perBlankResults[index] ? (
-                          <div className="text-emerald-400 text-sm font-bold">
-                            ✅ Σωστό
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <div className="text-red-400 text-sm font-bold">
-                              ❌ Λάθος
-                            </div>
-                            <div className="text-yellow-300 text-xs">
-                              Σωστό: {correctAnswers[index]}
-                            </div>
-                          </div>
-                        )}
+                    {localHasAnswered && perBlankResults && correctAnswers && !perBlankResults[index] && (
+                      <div className="absolute -top-10 left-0 right-0 text-center z-10 px-2">
+                        <div className="text-emerald-400 text-lg md:text-xl font-exo bg-black/60 rounded-md py-1 px-2 backdrop-blur-sm">
+                          {correctAnswers[index]}
+                        </div>
                       </div>
                     )}
                     <input
