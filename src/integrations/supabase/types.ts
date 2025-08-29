@@ -147,6 +147,48 @@ export type Database = {
         }
         Relationships: []
       }
+      question_review_status: {
+        Row: {
+          category_id: string
+          correct_attempts: number
+          correct_streak: number
+          created_at: string
+          id: string
+          last_attempted_at: string | null
+          needs_review: boolean
+          question_id: string
+          total_attempts: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          correct_attempts?: number
+          correct_streak?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          needs_review?: boolean
+          question_id: string
+          total_attempts?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          correct_attempts?: number
+          correct_streak?: number
+          created_at?: string
+          id?: string
+          last_attempted_at?: string | null
+          needs_review?: boolean
+          question_id?: string
+          total_attempts?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           category_id: string

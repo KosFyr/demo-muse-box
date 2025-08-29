@@ -16,11 +16,20 @@ import { supabase } from '@/integrations/supabase/client';
 interface GameScreenProps {
   playerData: PlayerData;
   gameState: GameState;
+  gameModeState: any; // Will be properly typed later
   onGameStateUpdate: (state: Partial<GameState>) => void;
   onGameEnd: () => void;
+  onQuestionAnswered: (questionId: string, categoryId: string, isCorrect: boolean) => Promise<void>;
 }
 
-export const GameScreen = ({ playerData, gameState, onGameStateUpdate, onGameEnd }: GameScreenProps) => {
+export const GameScreen = ({ 
+  playerData, 
+  gameState, 
+  gameModeState, 
+  onGameStateUpdate, 
+  onGameEnd, 
+  onQuestionAnswered 
+}: GameScreenProps) => {
   const { questions, loading, error, refetch } = useQuestions();
   const { user } = useAuth();
   const { validateAnswer, validating, lastResult } = useAnswerValidation();

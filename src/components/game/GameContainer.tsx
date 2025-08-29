@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { HomeScreen } from './HomeScreen';
+import { HomeScreen, GameMode } from './HomeScreen';
 import { PhotoUploadScreen } from './PhotoUploadScreen';
 import { GameScreen } from './GameScreen';
 import { EndScreen } from './EndScreen';
+import { useGameMode } from '@/hooks/useGameMode';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
 
 export type GameScreen = 'home' | 'photo-upload' | 'game' | 'end';
 
@@ -18,6 +20,8 @@ export interface GameState {
   correctAnswers: number;
   totalQuestions: number;
   usedQuestions: Set<string>;
+  gameMode: GameMode;
+  selectedCategoryIds: string[];
 }
 
 export const GameContainer = () => {
@@ -28,8 +32,13 @@ export const GameContainer = () => {
     currentLevelProgress: 0,
     correctAnswers: 0,
     totalQuestions: 0,
-    usedQuestions: new Set()
+    usedQuestions: new Set(),
+    gameMode: 'progress',
+    selectedCategoryIds: []
   });
+  
+  const { initializeGameMode, gameModeState } = useGameMode();
+  const { updateQuestionStatus } = useProgressTracking();
 
   const handleScreenChange = (screen: GameScreen) => {
     setCurrentScreen(screen);
@@ -43,20 +52,32 @@ export const GameContainer = () => {
     setGameState(prev => ({ ...prev, ...state }));
   };
 
+  const handleModeSelect = async (mode: GameMode, categoryIds: string[] = []) => {
+    await initializeGameMode(mode, categoryIds);
+    setGameState(prev => ({
+      ...prev,
+      gameMode: mode,
+      selectedCategoryIds: categoryIds
+    }));
+    setCurrentScreen('photo-upload');
+  };
+
   const resetGame = () => {
     setGameState({
       currentPosition: 1,
       currentLevelProgress: 0,
       correctAnswers: 0,
       totalQuestions: 0,
-      usedQuestions: new Set()
+      usedQuestions: new Set(),
+      gameMode: 'progress',
+      selectedCategoryIds: []
     });
   };
 
   const renderCurrentScreen = () => {
     switch (currentScreen) {
       case 'home':
-        return <HomeScreen onNext={() => handleScreenChange('photo-upload')} />;
+        return <HomeScreen onModeSelect={handleModeSelect} />;
       
       case 'photo-upload':
         return (
@@ -73,8 +94,10 @@ export const GameContainer = () => {
           <GameScreen
             playerData={playerData}
             gameState={gameState}
+            gameModeState={gameModeState}
             onGameStateUpdate={handleGameStateUpdate}
             onGameEnd={() => handleScreenChange('end')}
+            onQuestionAnswered={updateQuestionStatus}
           />
         );
       
@@ -95,7 +118,7 @@ export const GameContainer = () => {
         );
       
       default:
-        return <HomeScreen onNext={() => handleScreenChange('photo-upload')} />;
+        return <HomeScreen onModeSelect={handleModeSelect} />;
     }
   };
 
