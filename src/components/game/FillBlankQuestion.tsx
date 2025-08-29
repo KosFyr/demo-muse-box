@@ -101,27 +101,27 @@ export function FillBlankQuestion({
                     {localHasAnswered && perBlankResults ? (
                       // Show feedback box after answer submission
                       <div className="inline-block">
-                        {perBlankResults[index] ? (
-                          // Correct answer - single green box
-                          <div className="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-sm font-exo rounded-lg border border-emerald-500">
-                            <span className="text-emerald-200 mr-2">✔</span>
-                            <span>{userAnswers[index]}</span>
+                      {perBlankResults[index] ? (
+                        // Correct answer - single green box
+                        <div className="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-sm font-exo rounded-lg border border-emerald-500">
+                          <span className="text-emerald-200 mr-2">✔</span>
+                          <span>{userAnswers[index]}</span>
+                        </div>
+                      ) : (
+                        // Wrong answer - dual section box
+                        <div className="inline-block border border-gray-400 rounded-lg overflow-hidden" style={{ minWidth: `${Math.max(correctAnswers?.[index]?.length || 0, userAnswers[index]?.length || 0) * 8 + 60}px` }}>
+                          {/* Top section - Correct answer (40% height) */}
+                          <div className="bg-emerald-600 text-white px-2 py-1 text-xs font-exo flex items-center">
+                            <span className="text-emerald-200 mr-1">✔</span>
+                            <span className="truncate">{correctAnswers?.[index]}</span>
                           </div>
-                        ) : (
-                          // Wrong answer - dual section box
-                          <div className="inline-block border border-gray-400 rounded-lg overflow-hidden" style={{ minWidth: `${Math.max(correctAnswers?.[index]?.length || 0, userAnswers[index]?.length || 0) * 8 + 60}px` }}>
-                            {/* Top section - Correct answer (40% height) */}
-                            <div className="bg-emerald-600 text-white px-2 py-1 text-xs font-exo flex items-center">
-                              <span className="text-emerald-200 mr-1">✔</span>
-                              <span className="truncate">Correct: {correctAnswers?.[index]}</span>
-                            </div>
-                            {/* Bottom section - Wrong answer (60% height) */}
-                            <div className="bg-red-600 text-white px-2 py-1.5 text-xs font-exo flex items-center">
-                              <span className="text-red-200 mr-1">✘</span>
-                              <span className="truncate">Your answer: {userAnswers[index]}</span>
-                            </div>
+                          {/* Bottom section - Wrong answer (60% height) */}
+                          <div className="bg-red-600 text-white px-2 py-1.5 text-xs font-exo flex items-center">
+                            <span className="text-red-200 mr-1">✘</span>
+                            <span className="truncate">{userAnswers[index]}</span>
                           </div>
-                        )}
+                        </div>
+                      )}
                       </div>
                     ) : (
                       // Show input field before answer submission
