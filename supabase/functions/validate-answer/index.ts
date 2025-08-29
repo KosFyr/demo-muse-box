@@ -221,7 +221,18 @@ serve(async (req) => {
 
       if (!correctAnswers || correctAnswers.length === 0) {
         console.error('No correct answers found for FITB question', { questionId });
-        throw new Error('Correct answers not found');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Correct answers not found',
+            isCorrect: false,
+            similarity: 0,
+            feedback: 'Σφάλμα επικύρωσης απάντησης'
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
       }
 
       correctAnswersArr = correctAnswers.map((s) => String(s));
@@ -288,7 +299,18 @@ serve(async (req) => {
 
       if (error) {
         console.error('Error fetching question:', error);
-        throw new Error('Question not found');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Question not found',
+            isCorrect: false,
+            similarity: 0,
+            feedback: 'Σφάλμα επικύρωσης απάντησης'
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
       }
 
       correctAnswer = question.correct_answer;
