@@ -97,12 +97,12 @@ export function FillBlankQuestion({
               <div key={index} className="inline">
                 <span className="text-white/90">{part}</span>
                 {index < blanksCount && (
-                  <div className="inline-block mx-2 relative">
-                    {/* Feedback above input */}
+                    <div className="inline-block mx-2 relative">
+                    {/* Feedback above input - only for incorrect answers */}
                     {localHasAnswered && perBlankResults && correctAnswers && !perBlankResults[index] && (
-                      <div className="absolute -top-10 left-0 right-0 text-center z-10 px-2">
-                        <div className="text-emerald-400 text-lg md:text-xl font-exo bg-black/60 rounded-md py-1 px-2 backdrop-blur-sm">
-                          {correctAnswers[index]}
+                      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-10 min-w-max">
+                        <div className="bg-emerald-900/90 text-emerald-300 text-sm font-exo px-3 py-2 rounded-lg shadow-lg border border-emerald-500/30 whitespace-nowrap">
+                          ✓ {correctAnswers[index]}
                         </div>
                       </div>
                     )}
@@ -112,14 +112,16 @@ export function FillBlankQuestion({
                       onChange={(e) => handleInputChange(index, e.target.value)}
                       onKeyPress={(e) => handleKeyPress(e, index)}
                       disabled={localHasAnswered || isValidating}
-                      className={`px-3 py-2 bg-black/30 border-2 rounded-lg text-cyan-100 font-exo focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 backdrop-blur-sm transition-all duration-300 ${
+                      className={`px-4 py-3 min-w-[120px] bg-black/40 border-2 rounded-xl text-cyan-100 font-exo text-center focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 backdrop-blur-sm transition-all duration-300 ${
                         localHasAnswered && perBlankResults 
                           ? perBlankResults[index] 
-                            ? 'border-emerald-400/70 bg-emerald-500/10' 
-                            : 'border-red-400/70 bg-red-500/10'
-                          : 'border-cyan-500/50'
+                            ? 'border-emerald-400/70 bg-emerald-500/20 shadow-lg shadow-emerald-500/20' 
+                            : 'border-red-400/70 bg-red-500/20 shadow-lg shadow-red-500/20'
+                          : 'border-cyan-500/50 hover:border-cyan-400/70'
                       }`}
-                      style={{ width: `${Math.max(80, (userAnswers[index]?.length || 3) * 12)}px` }}
+                      style={{ 
+                        width: `${Math.max(120, (correctAnswers && correctAnswers[index] ? correctAnswers[index].length * 12 + 40 : (userAnswers[index]?.length || 3) * 12 + 40))}px` 
+                      }}
                       placeholder="..."
                     />
                   </div>
