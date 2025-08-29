@@ -311,7 +311,8 @@ serve(async (req) => {
       similarity,
       correctAnswer,
       feedback: questionType === 'fill-in-the-blank'
-        ? (isCorrect ? 'Σωστό!' : 'Μερική απάντηση')
+        ? (isCorrect ? 'Σωστό!' : 
+           correctCountDetail === 0 ? 'Λάθος απάντηση' : 'Μερική απάντηση')
         : (isCorrect ? 'Σωστό!' : 'Λάθος.')
     };
 
