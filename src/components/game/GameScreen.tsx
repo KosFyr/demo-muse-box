@@ -4,8 +4,9 @@ import { PlayerData, GameState } from './GameContainer';
 import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NeonButton } from '@/components/ui/NeonButton';
-import { CircularProgressRing } from '@/components/ui/CircularProgressRing';
-import { IcebergGameBoard } from './IcebergGameBoard';
+import { LevelMap } from './LevelMap';
+import { ConfettiEffect } from './ConfettiEffect';
+import { GameHUD } from './GameHUD';
 import { FillBlankQuestion } from './FillBlankQuestion';
 import { useQuestions, Question } from '@/hooks/useQuestions';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,8 +40,9 @@ export const GameScreen = ({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswering, setIsAnswering] = useState(false);
   const [hasAnswered, setHasAnswered] = useState(false);
-  const [isClimbing, setIsClimbing] = useState(false);
-  const [isSlipping, setIsSlipping] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showWrongAnimation, setShowWrongAnimation] = useState(false);
 
   useEffect(() => {
     // Load the first question only when questions are ready and none is loaded yet
@@ -110,7 +112,13 @@ export const GameScreen = ({
           newLevelProgress = newLevelProgress % 1;
         }
         
-        setIsClimbing(progressIncrease > 0);
+        if (progressIncrease > 0) {
+          setIsMoving(true);
+          setShowConfetti(true);
+        } else if (correctCount === 0) {
+          setShowWrongAnimation(true);
+          setTimeout(() => setShowWrongAnimation(false), 1000);
+        }
         
         newState = {
           usedQuestions: newUsedQuestions,
@@ -122,7 +130,8 @@ export const GameScreen = ({
       } else {
         // All-or-nothing for other question types
         if (result.isCorrect) {
-          setIsClimbing(true);
+          setIsMoving(true);
+          setShowConfetti(true);
           newState = {
             usedQuestions: newUsedQuestions,
             totalQuestions: gameState.totalQuestions + 1,
@@ -131,9 +140,9 @@ export const GameScreen = ({
             currentLevelProgress: 0
           };
         } else {
-          // Just slip animation, no progress loss
-          setIsSlipping(true);
-          setTimeout(() => setIsSlipping(false), 1000);
+          // Gentle wrong answer animation
+          setShowWrongAnimation(true);
+          setTimeout(() => setShowWrongAnimation(false), 1000);
           
           newState = {
             usedQuestions: newUsedQuestions,
@@ -152,8 +161,8 @@ export const GameScreen = ({
         savePlayerProgress(newState);
       }
       
-      // Reset climbing animation
-      setTimeout(() => setIsClimbing(false), 1000);
+      // Reset movement animation
+      setTimeout(() => setIsMoving(false), 1500);
       
     } catch (error) {
       console.error('Error validating answer:', error);
@@ -233,50 +242,31 @@ export const GameScreen = ({
   return (
     <NeonBackdrop>
       <div className="min-h-screen p-4 space-y-6">
-        {/* Game Board */}
+        {/* Confetti Effect */}
+        <ConfettiEffect 
+          isActive={showConfetti} 
+          onComplete={() => setShowConfetti(false)}
+          intensity="high"
+        />
+
+        {/* Level Map */}
         <div className="flex justify-center">
-          <GlassCard glowColor="cyan" intensity="high" className="relative">
-            <IcebergGameBoard
-              effectivePosition={gameState.currentPosition + gameState.currentLevelProgress}
+          <div className={showWrongAnimation ? "animate-shake" : ""}>
+            <LevelMap
+              currentPosition={gameState.currentPosition}
+              levelProgress={gameState.currentLevelProgress}
               playerData={playerData}
-              isClimbing={isClimbing}
-              isSlipping={isSlipping}
+              isMoving={isMoving}
+              totalLevels={15}
             />
-          </GlassCard>
+          </div>
         </div>
 
         {/* Gaming HUD */}
+        <GameHUD gameState={gameState} totalLevels={15} />
+
+        {/* Question Display */}
         <div className="max-w-4xl mx-auto">
-          <GlassCard glowColor="lime" className="mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <CircularProgressRing
-                  progress={(gameState.currentPosition / 15) * 100}
-                  level={gameState.currentPosition + 1}
-                  maxLevel={15}
-                  size={100}
-                />
-                
-                <div className="text-white">
-                  <h3 className="font-orbitron font-bold text-xl mb-1">
-                    Level {gameState.currentPosition + 1}
-                  </h3>
-                  <p className="text-white/70 font-exo">
-                    Score: <span className="text-cyan-400 font-bold">{gameState.correctAnswers}</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-right text-white/80 font-exo">
-                <div className="text-sm">Progress</div>
-                <div className="text-lg font-bold text-cyan-400">
-                  {Math.round(gameState.currentLevelProgress * 100)}%
-                </div>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Question Display */}
           {currentQuestion && (
             <div className="mb-6">
               {currentQuestion.question_type === 'fill-in-the-blank' ? (
