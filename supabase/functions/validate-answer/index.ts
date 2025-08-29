@@ -111,58 +111,9 @@ serve(async (req) => {
   }
 
   try {
-    // Verify user is authenticated
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - missing auth token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Create Supabase client with service role for reading answers
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    // Also create client with user auth for verification
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-    
-    // Verify the user is actually authenticated
-    const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Basic rate limiting - store request times per user
-    const userId = user.id;
-    const now = Date.now();
-    const rateLimitKey = `rate_limit_${userId}`;
-    
-    // Simple in-memory rate limiting (10 requests per minute per user)
-    if (!globalThis[rateLimitKey]) {
-      globalThis[rateLimitKey] = [];
-    }
-    
-    const userRequests = globalThis[rateLimitKey];
-    // Remove requests older than 1 minute
-    while (userRequests.length > 0 && userRequests[0] < now - 60000) {
-      userRequests.shift();
-    }
-    
-    if (userRequests.length >= 10) {
-      return new Response(
-        JSON.stringify({ error: 'Rate limit exceeded - too many requests' }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    userRequests.push(now);
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
