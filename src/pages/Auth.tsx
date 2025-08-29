@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NeonButton } from '@/components/ui/NeonButton';
+import { AvatarUpload } from '@/components/ui/AvatarUpload';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +16,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showAvatarSetup, setShowAvatarSetup] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -119,8 +121,9 @@ export default function Auth() {
         
         toast({
           title: "Επιτυχής εγγραφή!",
-          description: "Έλεγξε το email σου για επιβεβαίωση.",
+          description: "Ας φτιάξουμε το avatar σου!",
         });
+        setShowAvatarSetup(true);
       }
     } catch (error: any) {
       toast({
@@ -132,6 +135,16 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  if (showAvatarSetup) {
+    return (
+      <NeonBackdrop enableMatrix={true}>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <AvatarUpload onClose={() => navigate('/')} />
+        </div>
+      </NeonBackdrop>
+    );
+  }
 
   return (
     <NeonBackdrop enableMatrix={true}>

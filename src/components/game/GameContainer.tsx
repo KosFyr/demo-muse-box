@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { HomeScreen, GameMode } from './HomeScreen';
-import { PhotoUploadScreen } from './PhotoUploadScreen';
 import { GameScreen } from './GameScreen';
 import { EndScreen } from './EndScreen';
 import { useGameMode } from '@/hooks/useGameMode';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
 
-export type GameScreen = 'home' | 'photo-upload' | 'game' | 'end';
+export type GameScreen = 'home' | 'game' | 'end';
 
 export interface PlayerData {
   name: string;
@@ -59,7 +58,7 @@ export const GameContainer = () => {
       gameMode: mode,
       selectedCategoryIds: categoryIds
     }));
-    setCurrentScreen('photo-upload');
+    setCurrentScreen('game');
   };
 
   const resetGame = () => {
@@ -78,16 +77,6 @@ export const GameContainer = () => {
     switch (currentScreen) {
       case 'home':
         return <HomeScreen onModeSelect={handleModeSelect} />;
-      
-      case 'photo-upload':
-        return (
-          <PhotoUploadScreen
-            onNext={() => handleScreenChange('game')}
-            onBack={() => handleScreenChange('home')}
-            onPlayerDataUpdate={handlePlayerDataUpdate}
-            playerData={playerData}
-          />
-        );
       
       case 'game':
         return (
@@ -108,7 +97,7 @@ export const GameContainer = () => {
             playerData={playerData}
             onPlayAgain={() => {
               resetGame();
-              handleScreenChange('photo-upload');
+              handleScreenChange('game');
             }}
             onHome={() => {
               resetGame();

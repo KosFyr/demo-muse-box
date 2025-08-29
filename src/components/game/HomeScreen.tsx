@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { NeonButton } from '@/components/ui/NeonButton';
+import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -13,6 +15,7 @@ interface HomeScreenProps {
 export const HomeScreen = ({ onModeSelect }: HomeScreenProps) => {
   const { user } = useAuth();
   const { categoryProgress, mistakeStats, loading } = useProgressTracking();
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false);
 
   const handleModeSelect = (mode: GameMode, categoryIds?: string[]) => {
     onModeSelect(mode, categoryIds);
@@ -20,9 +23,30 @@ export const HomeScreen = ({ onModeSelect }: HomeScreenProps) => {
 
   const isMistakeTestAvailable = mistakeStats.totalMistakes >= 15;
 
+  if (showAvatarUpload) {
+    return (
+      <NeonBackdrop enableMatrix={true}>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <AvatarUpload onClose={() => setShowAvatarUpload(false)} />
+        </div>
+      </NeonBackdrop>
+    );
+  }
+
   return (
     <NeonBackdrop enableMatrix={true}>
       <div className="min-h-screen flex flex-col items-center justify-center p-6 relative">
+        {/* Avatar Button */}
+        <div className="absolute top-4 right-4 z-10">
+          <NeonButton
+            onClick={() => setShowAvatarUpload(true)}
+            variant="purple"
+            size="sm"
+          >
+            Avatar 🎨
+          </NeonButton>
+        </div>
+
         {/* Main Game Title */}
         <div className="text-center mb-12">
           <h1 className="font-orbitron font-black text-6xl md:text-8xl mb-6">
