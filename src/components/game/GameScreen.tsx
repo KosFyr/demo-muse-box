@@ -1,23 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
-import { NeonBackdrop } from '@/components/ui/NeonBackdrop';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { NeonButton } from '@/components/ui/NeonButton';
-import { LevelMap } from './LevelMap';
-import { ConfettiEffect } from './ConfettiEffect';
-import { GameHUD } from './GameHUD';
-import { FillBlankQuestion } from './FillBlankQuestion';
-import { useQuestions, Question } from '@/hooks/useQuestions';
-import { useAuth } from '@/hooks/useAuth';
-import { useAnswerValidation } from '@/hooks/useAnswerValidation';
-import { supabase } from '@/integrations/supabase/client';
-
+import { LevelSelectionScreen } from './LevelSelectionScreen';
+import { SingleLevelGameScreen } from './SingleLevelGameScreen';
 
 interface GameScreenProps {
   playerData: PlayerData;
   gameState: GameState;
-  gameModeState: any; // Will be properly typed later
+  gameModeState: any;
   onGameStateUpdate: (state: Partial<GameState>) => void;
   onGameEnd: () => void;
   onQuestionAnswered: (questionId: string, categoryId: string, isCorrect: boolean) => Promise<void>;
@@ -31,336 +21,50 @@ export const GameScreen = ({
   onGameEnd, 
   onQuestionAnswered 
 }: GameScreenProps) => {
-  const { questions, loading, error, refetch } = useQuestions();
-  const { user } = useAuth();
-  const { validateAnswer, validating, lastResult } = useAnswerValidation();
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<string>('');
-  const [feedback, setFeedback] = useState<string>('');
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isAnswering, setIsAnswering] = useState(false);
-  const [hasAnswered, setHasAnswered] = useState(false);
-  const [isMoving, setIsMoving] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [showWrongAnimation, setShowWrongAnimation] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<'levelSelect' | 'playLevel'>('levelSelect');
+  const [selectedLevel, setSelectedLevel] = useState<number>(1);
 
-  useEffect(() => {
-    // Load the first question only when questions are ready and none is loaded yet
-    if (questions.length > 0 && !currentQuestion) {
-      loadNextQuestion();
-    }
-  }, [questions]);
-
-  const loadNextQuestion = () => {
-    if (questions.length === 0) return;
-    
-    const availableQuestions = questions.filter(q => !gameState.usedQuestions.has(q.id));
-    
-    if (availableQuestions.length === 0 || gameState.currentPosition >= 15) {
-      onGameEnd();
-      return;
-    }
-
-    const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-    setCurrentQuestion(randomQuestion);
-    setSelectedAnswer('');
-    setFeedback('');
-    setShowFeedback(false);
-    setHasAnswered(false);
+  const handleLevelSelect = (levelNumber: number) => {
+    setSelectedLevel(levelNumber);
+    setCurrentScreen('playLevel');
   };
 
-  const handleAnswer = async (answer: string | boolean, userAnswers?: string[]) => {
-    if (!currentQuestion || isAnswering || validating) return;
+  const handleLevelComplete = (score: number, medal: 'bronze' | 'silver' | 'gold' | null) => {
+    // Update game state with level completion
+    onGameStateUpdate({
+      currentPosition: Math.max(gameState.currentPosition, selectedLevel),
+      correctAnswers: gameState.correctAnswers + Math.floor((score / 100) * 10), // Approximate
+      totalQuestions: gameState.totalQuestions + 10 // Each level has 10 questions
+    });
     
-    setIsAnswering(true);
-    
-    try {
-      // Use secure server-side validation
-      const result = await validateAnswer(
-        currentQuestion.id,
-        currentQuestion.question_type,
-        answer,
-        userAnswers
-      );
-      
-      if (currentQuestion.question_type !== 'fill-in-the-blank') {
-        setSelectedAnswer(answer as string);
-      }
-      
-      setFeedback(result.feedback);
-      setShowFeedback(true);
-      setHasAnswered(true);
-
-      // Update used questions
-      const newUsedQuestions = new Set(gameState.usedQuestions);
-      newUsedQuestions.add(currentQuestion.id);
-
-      let newState;
-
-      if (currentQuestion.question_type === 'fill-in-the-blank') {
-        // Partial credit system for fill-in-the-blank
-        const correctCount = result.correctCount || 0;
-        const totalBlanks = result.totalBlanks || 1;
-        const progressIncrease = correctCount / totalBlanks;
-        
-        let newPosition = gameState.currentPosition;
-        let newLevelProgress = gameState.currentLevelProgress + progressIncrease;
-        
-        // If we've filled the current level, advance to next level
-        if (newLevelProgress >= 1) {
-          newPosition = Math.min(15, newPosition + Math.floor(newLevelProgress));
-          newLevelProgress = newLevelProgress % 1;
-        }
-        
-        if (progressIncrease > 0) {
-          setIsMoving(true);
-          setShowConfetti(true);
-        } else if (correctCount === 0) {
-          setShowWrongAnimation(true);
-          setTimeout(() => setShowWrongAnimation(false), 1000);
-        }
-        
-        newState = {
-          usedQuestions: newUsedQuestions,
-          totalQuestions: gameState.totalQuestions + 1,
-          correctAnswers: result.isCorrect ? gameState.correctAnswers + 1 : gameState.correctAnswers,
-          currentPosition: newPosition,
-          currentLevelProgress: newLevelProgress
-        };
-      } else {
-        // All-or-nothing for other question types
-        if (result.isCorrect) {
-          setIsMoving(true);
-          setShowConfetti(true);
-          newState = {
-            usedQuestions: newUsedQuestions,
-            totalQuestions: gameState.totalQuestions + 1,
-            correctAnswers: gameState.correctAnswers + 1,
-            currentPosition: Math.min(15, gameState.currentPosition + 1),
-            currentLevelProgress: 0
-          };
-        } else {
-          // Gentle wrong answer animation
-          setShowWrongAnimation(true);
-          setTimeout(() => setShowWrongAnimation(false), 1000);
-          
-          newState = {
-            usedQuestions: newUsedQuestions,
-            totalQuestions: gameState.totalQuestions + 1,
-            correctAnswers: gameState.correctAnswers,
-            currentPosition: gameState.currentPosition,
-            currentLevelProgress: gameState.currentLevelProgress
-          };
-        }
-      }
-
-      onGameStateUpdate(newState);
-
-      // Save progress to database
-      if (user) {
-        savePlayerProgress(newState);
-      }
-      
-      // Reset movement animation
-      setTimeout(() => setIsMoving(false), 1500);
-      
-    } catch (error) {
-      console.error('Error validating answer:', error);
-      setFeedback('Σφάλμα επικύρωσης απάντησης');
-      setShowFeedback(true);
-    }
-
-    setIsAnswering(false);
+    // Return to level selection
+    setCurrentScreen('levelSelect');
   };
 
-  const handleNextQuestion = () => {
-    if (gameState.currentPosition >= 15) {
-      onGameEnd();
-    } else {
-      loadNextQuestion();
-    }
+  const handleBackToSelection = () => {
+    setCurrentScreen('levelSelect');
   };
 
-  const savePlayerProgress = async (state: Partial<GameState>) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('player_progress')
-        .upsert({
-          user_id: user.id,
-          current_position: state.currentPosition || gameState.currentPosition,
-          correct_answers: state.correctAnswers || gameState.correctAnswers,
-          total_questions_answered: state.totalQuestions || gameState.totalQuestions,
-          completion_percentage: ((state.correctAnswers || gameState.correctAnswers) / (state.totalQuestions || gameState.totalQuestions || 1)) * 100,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,category_id'
-        });
-
-      if (error) {
-        console.error('Error saving progress:', error);
-      }
-    } catch (error) {
-      console.error('Error saving progress:', error);
-    }
+  const handleBackToMenu = () => {
+    onGameEnd();
   };
 
-  if (loading || (!currentQuestion && !error)) {
+  if (currentScreen === 'playLevel') {
     return (
-      <NeonBackdrop>
-        <div className="min-h-screen flex items-center justify-center">
-          <GlassCard glowColor="cyan" className="text-center">
-            <div className="w-16 h-16 mx-auto border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mb-4"></div>
-            <p className="text-white font-exo text-lg">{loading ? 'Loading Questions... 🎮' : 'Loading Challenge... ⚡'}</p>
-          </GlassCard>
-        </div>
-      </NeonBackdrop>
-    );
-  }
-
-  if (error || questions.length === 0) {
-    return (
-      <NeonBackdrop>
-        <div className="min-h-screen flex items-center justify-center">
-          <GlassCard glowColor="pink" className="text-center space-y-4">
-            <div className="text-6xl mb-4">⚠️</div>
-            <div className="text-xl font-orbitron font-bold text-white">Connection Failed</div>
-            <p className="text-lg text-white/70 font-exo">Unable to load game challenges.</p>
-            <NeonButton
-              variant="lime"
-              onClick={refetch}
-            >
-              Retry Connection 🔄
-            </NeonButton>
-          </GlassCard>
-        </div>
-      </NeonBackdrop>
+      <SingleLevelGameScreen
+        playerData={playerData}
+        levelNumber={selectedLevel}
+        onLevelComplete={handleLevelComplete}
+        onBack={handleBackToSelection}
+      />
     );
   }
 
   return (
-    <NeonBackdrop>
-      <div className="min-h-screen p-4 space-y-6">
-        {/* Confetti Effect */}
-        <ConfettiEffect 
-          isActive={showConfetti} 
-          onComplete={() => setShowConfetti(false)}
-          intensity="high"
-        />
-
-        {/* Level Map */}
-        <div className="flex justify-center">
-          <div className={showWrongAnimation ? "animate-shake" : ""}>
-            <LevelMap
-              currentPosition={gameState.currentPosition}
-              levelProgress={gameState.currentLevelProgress}
-              playerData={playerData}
-              isMoving={isMoving}
-              totalLevels={15}
-            />
-          </div>
-        </div>
-
-        {/* Gaming HUD */}
-        <GameHUD gameState={gameState} totalLevels={15} />
-
-        {/* Question Display */}
-        <div className="max-w-4xl mx-auto">
-          {currentQuestion && (
-            <div className="mb-6">
-              {currentQuestion.question_type === 'fill-in-the-blank' ? (
-                <FillBlankQuestion
-                  questionText={currentQuestion.question_text}
-                  explanation={currentQuestion.explanation}
-                  onAnswer={(userAnswers: string[]) => handleAnswer('', userAnswers)}
-                  feedback={feedback}
-                  hasAnswered={hasAnswered}
-                  onNextQuestion={hasAnswered ? () => loadNextQuestion() : undefined}
-                  isValidating={isAnswering}
-                   perBlankResults={lastResult?.perBlankResults}
-                   correctCount={lastResult?.correctCount}
-                   totalBlanks={lastResult?.totalBlanks}
-                   correctAnswers={lastResult?.correctAnswers}
-                />
-              ) : (
-                <GlassCard glowColor="pink">
-                  <div className="text-center space-y-6">
-                    <h2 className="text-2xl md:text-3xl font-orbitron font-bold text-white">
-                      {currentQuestion.question_text}
-                    </h2>
-
-                    {currentQuestion.question_type === 'multiple-choice' && currentQuestion.options && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {currentQuestion.options.map((option, index) => (
-                          <NeonButton
-                            key={index}
-                            variant={selectedAnswer === option ? 'cyan' : 'purple'}
-                            onClick={() => !isAnswering && setSelectedAnswer(option)}
-                            disabled={isAnswering}
-                            className="p-4 text-left"
-                          >
-                            {option}
-                          </NeonButton>
-                        ))}
-                      </div>
-                    )}
-
-                    {currentQuestion.question_type === 'true-false' && (
-                      <div className="flex gap-4 justify-center">
-                        <NeonButton
-                          variant={selectedAnswer === 'true' ? 'lime' : 'purple'}
-                          onClick={() => !isAnswering && setSelectedAnswer('true')}
-                          disabled={isAnswering}
-                          size="lg"
-                        >
-                          True ✅
-                        </NeonButton>
-                        <NeonButton
-                          variant={selectedAnswer === 'false' ? 'pink' : 'purple'}
-                          onClick={() => !isAnswering && setSelectedAnswer('false')}
-                          disabled={isAnswering}
-                          size="lg"
-                        >
-                          False ❌
-                        </NeonButton>
-                      </div>
-                    )}
-
-                    {!hasAnswered && selectedAnswer && (
-                      <div className="text-center">
-                        <NeonButton
-                          variant="lime"
-                          onClick={() => handleAnswer(selectedAnswer)}
-                          disabled={isAnswering}
-                          size="lg"
-                        >
-                          {isAnswering ? 'Processing... ⚡' : 'Submit Answer ⚡'}
-                        </NeonButton>
-                      </div>
-                    )}
-
-                    {hasAnswered && feedback && (
-                      <GlassCard glowColor="cyan" className="text-center">
-                        <p className="text-white font-exo text-lg">{feedback}</p>
-                        <div className="mt-4">
-                          <NeonButton
-                            variant="cyan"
-                            onClick={() => loadNextQuestion()}
-                            size="lg"
-                          >
-                            Next Challenge 🚀
-                          </NeonButton>
-                        </div>
-                      </GlassCard>
-                    )}
-                  </div>
-                </GlassCard>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </NeonBackdrop>
+    <LevelSelectionScreen
+      playerData={playerData}
+      onLevelSelect={handleLevelSelect}
+      onBack={handleBackToMenu}
+    />
   );
 };

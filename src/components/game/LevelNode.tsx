@@ -1,48 +1,72 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
+type MedalType = 'bronze' | 'silver' | 'gold' | null;
+
 interface LevelNodeProps {
   nodeNumber: number;
   position: { x: number; y: number };
+  chapterNumber: number;
   isCompleted: boolean;
-  isCurrent: boolean;
-  isNext: boolean;
-  progress: number;
+  isLocked: boolean;
+  isAvailable: boolean;
+  medal: MedalType;
+  score?: number;
+  onClick?: () => void;
 }
 
 export const LevelNode: React.FC<LevelNodeProps> = ({
   nodeNumber,
   position,
+  chapterNumber,
   isCompleted,
-  isCurrent,
-  isNext,
-  progress
+  isLocked,
+  isAvailable,
+  medal,
+  score,
+  onClick
 }) => {
+  const getChapterColors = () => {
+    const colors = [
+      { bg: 'linear-gradient(135deg, #ff6ec7, #ff8fab)', border: '#ff6ec7', glow: 'rgba(255, 110, 199, 0.4)' }, // Pink
+      { bg: 'linear-gradient(135deg, #00c9ff, #92ffd3)', border: '#00c9ff', glow: 'rgba(0, 201, 255, 0.4)' }, // Cyan
+      { bg: 'linear-gradient(135deg, #7fff00, #59ff00)', border: '#7fff00', glow: 'rgba(127, 255, 0, 0.4)' }, // Lime
+      { bg: 'linear-gradient(135deg, #9c27b0, #e91e63)', border: '#9c27b0', glow: 'rgba(156, 39, 176, 0.4)' }, // Purple
+      { bg: 'linear-gradient(135deg, #ff9800, #ff5722)', border: '#ff9800', glow: 'rgba(255, 152, 0, 0.4)' } // Orange
+    ];
+    return colors[chapterNumber % colors.length];
+  };
+
   const getNodeStyle = () => {
+    const chapterColors = getChapterColors();
+    
+    if (isLocked) {
+      return {
+        background: 'linear-gradient(135deg, #374151, #1f2937)',
+        border: '3px solid #4b5563',
+        boxShadow: '0 0 5px rgba(75, 85, 99, 0.3)',
+        color: '#6b7280',
+        cursor: 'not-allowed'
+      };
+    }
+    
     if (isCompleted) {
       return {
-        background: 'linear-gradient(135deg, #10b981, #059669)',
-        border: '3px solid #34d399',
-        boxShadow: '0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.3)',
-        color: 'white'
+        background: chapterColors.bg,
+        border: `3px solid ${chapterColors.border}`,
+        boxShadow: `0 0 20px ${chapterColors.glow}, 0 0 40px ${chapterColors.glow}`,
+        color: 'white',
+        cursor: 'pointer'
       };
     }
     
-    if (isCurrent) {
+    if (isAvailable) {
       return {
-        background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-        border: '3px solid #60a5fa',
-        boxShadow: '0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3)',
-        color: 'white'
-      };
-    }
-    
-    if (isNext) {
-      return {
-        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-        border: '3px solid #fbbf24',
-        boxShadow: '0 0 15px rgba(245, 158, 11, 0.4)',
-        color: 'white'
+        background: `linear-gradient(135deg, ${chapterColors.border}88, ${chapterColors.border}44)`,
+        border: `3px solid ${chapterColors.border}`,
+        boxShadow: `0 0 15px ${chapterColors.glow}`,
+        color: 'white',
+        cursor: 'pointer'
       };
     }
     
@@ -50,38 +74,43 @@ export const LevelNode: React.FC<LevelNodeProps> = ({
       background: 'linear-gradient(135deg, #6b7280, #4b5563)',
       border: '3px solid #9ca3af',
       boxShadow: '0 0 10px rgba(107, 114, 128, 0.3)',
-      color: '#d1d5db'
+      color: '#d1d5db',
+      cursor: 'not-allowed'
     };
   };
 
+  const getMedalIcon = () => {
+    if (medal === 'gold') return '🥇';
+    if (medal === 'silver') return '🥈';
+    if (medal === 'bronze') return '🥉';
+    return null;
+  };
+
   const getNodeIcon = () => {
+    if (isCompleted && medal) return getMedalIcon();
     if (isCompleted) return '⭐';
-    if (isCurrent) return `${nodeNumber}`;
-    if (isNext) return '🎯';
+    if (isLocked) return '🔒';
     return nodeNumber;
   };
 
   const getDecorations = () => {
-    if (isCompleted) {
+    if (isCompleted && medal) {
       return (
         <div className="absolute inset-0 pointer-events-none">
-          {/* Sparkle effects */}
-          <div className="absolute -top-2 -right-2 text-yellow-300 animate-bounce">✨</div>
-          <div className="absolute -bottom-2 -left-2 text-yellow-300 animate-bounce" style={{ animationDelay: '0.5s' }}>⭐</div>
-          <div className="absolute -top-2 -left-2 text-yellow-300 animate-bounce" style={{ animationDelay: '1s' }}>💫</div>
+          {/* Sparkle effects for completed levels */}
+          <div className="absolute -top-1 -right-1 text-yellow-300 animate-bounce text-sm">✨</div>
+          <div className="absolute -bottom-1 -left-1 text-yellow-300 animate-bounce text-sm" style={{ animationDelay: '0.5s' }}>⭐</div>
         </div>
       );
     }
     
-    if (isCurrent) {
+    if (isAvailable && !isCompleted) {
       return (
         <div className="absolute inset-0 pointer-events-none">
-          {/* Progress ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin"></div>
-          {/* Pulse effect */}
+          {/* Gentle pulse for available levels */}
           <div 
-            className="absolute inset-0 rounded-full bg-blue-400/20 animate-pulse"
-            style={{ animationDuration: '1s' }}
+            className="absolute inset-0 rounded-full bg-white/10 animate-pulse"
+            style={{ animationDuration: '2s' }}
           ></div>
         </div>
       );
@@ -96,51 +125,61 @@ export const LevelNode: React.FC<LevelNodeProps> = ({
       style={{
         left: position.x,
         top: position.y,
-        zIndex: isCurrent ? 20 : isCompleted ? 15 : 10
+        zIndex: isCompleted ? 15 : isAvailable ? 10 : 5
       }}
     >
       {/* Node Background Glow */}
       <div
-        className="absolute inset-0 rounded-full blur-lg opacity-50 animate-pulse"
+        className="absolute inset-0 rounded-full blur-lg opacity-30"
         style={{
           ...getNodeStyle(),
-          width: '100px',
-          height: '100px',
-          transform: 'translate(-12px, -12px)'
+          width: '90px',
+          height: '90px',
+          transform: 'translate(-10px, -10px)'
         }}
       ></div>
 
       {/* Main Node */}
       <div
         className={cn(
-          "relative w-20 h-20 rounded-full flex items-center justify-center font-bold text-2xl transition-all duration-500 cursor-pointer transform hover:scale-110",
-          isCurrent && "animate-pulse"
+          "relative w-16 h-16 rounded-full flex flex-col items-center justify-center font-bold text-lg transition-all duration-500",
+          (isAvailable || isCompleted) && "hover:scale-110",
+          isLocked && "opacity-60"
         )}
         style={getNodeStyle()}
+        onClick={!isLocked ? onClick : undefined}
       >
-        {getNodeIcon()}
-        
-        {/* Progress indicator for current node */}
-        {isCurrent && progress > 0 && (
-          <div className="absolute inset-0 rounded-full overflow-hidden">
-            <div
-              className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-lime-400 to-green-400 transition-all duration-700"
-              style={{ height: `${progress * 100}%` }}
-            ></div>
-          </div>
+        <div className="text-xl">{getNodeIcon()}</div>
+        {isCompleted && score !== undefined && (
+          <div className="text-xs text-white/80 font-medium">{score}%</div>
         )}
         
         {getDecorations()}
       </div>
 
-      {/* Node Label */}
-      {!isCompleted && (
-        <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2">
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg px-3 py-1 text-white text-sm font-exo whitespace-nowrap">
-            {isCurrent ? 'Current Level' : isNext ? 'Next Up!' : `Level ${nodeNumber}`}
+      {/* Chapter Badge */}
+      {nodeNumber % 10 === 1 && (
+        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+            Chapter {chapterNumber + 1}
           </div>
         </div>
       )}
+
+      {/* Node Label */}
+      <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2">
+        <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1 text-white text-xs font-exo whitespace-nowrap text-center">
+          <div>Level {nodeNumber}</div>
+          {isCompleted && medal && (
+            <div className="text-yellow-300 font-medium">
+              {medal.charAt(0).toUpperCase() + medal.slice(1)}
+            </div>
+          )}
+          {isLocked && (
+            <div className="text-red-300">Locked</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
