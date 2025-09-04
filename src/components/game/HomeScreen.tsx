@@ -6,22 +6,14 @@ import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { useAuth } from '@/hooks/useAuth';
 
-export type GameMode = 'progress' | 'units' | 'mistakes';
-
 interface HomeScreenProps {
-  onModeSelect: (mode: GameMode, categoryIds?: string[]) => void;
+  onStartGame: () => void;
 }
 
-export const HomeScreen = ({ onModeSelect }: HomeScreenProps) => {
+export const HomeScreen = ({ onStartGame }: HomeScreenProps) => {
   const { user } = useAuth();
-  const { categoryProgress, mistakeStats, loading } = useProgressTracking();
+  const { categoryProgress, loading } = useProgressTracking();
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
-
-  const handleModeSelect = (mode: GameMode, categoryIds?: string[]) => {
-    onModeSelect(mode, categoryIds);
-  };
-
-  const isMistakeTestAvailable = mistakeStats.totalMistakes >= 15;
 
   if (showAvatarUpload) {
     return (
@@ -61,63 +53,23 @@ export const HomeScreen = ({ onModeSelect }: HomeScreenProps) => {
           </p>
         </div>
 
-        {/* Game Mode Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 w-full max-w-6xl">
-          {/* Units Test */}
-          <GlassCard glowColor="cyan" className="text-center cursor-pointer hover:bg-white/10 transition-all" 
-                     onClick={() => handleModeSelect('units')}>
-            <div className="text-4xl mb-4">📘</div>
-            <div className="text-2xl font-bold text-cyan-400 font-orbitron mb-2">Τεστ Ενότητας</div>
-            <div className="text-white/70 text-sm font-exo mb-4">
-              Διάλεξε κεφάλαιο για στοχευμένη εξάσκηση
+        {/* Start Game Button */}
+        <div className="mb-12">
+          <GlassCard glowColor="purple" className="text-center cursor-pointer hover:bg-white/10 transition-all max-w-md mx-auto" 
+                     onClick={onStartGame}>
+            <div className="text-6xl mb-6 animate-bounce">🎮</div>
+            <div className="text-3xl font-bold text-purple-400 font-orbitron mb-4">Ξεκίνα Παιχνίδι</div>
+            <div className="text-white/70 text-lg font-exo mb-6">
+              Επιλέξτε κεφάλαιο και παίξτε τις πίστες!
             </div>
             {!loading && (
-              <div className="text-xs text-white/50">
+              <div className="text-sm text-white/60 mb-2">
                 {categoryProgress.length} κεφάλαια διαθέσιμα
               </div>
             )}
-          </GlassCard>
-          
-          {/* Progress Test */}
-          <GlassCard glowColor="lime" className="text-center cursor-pointer hover:bg-white/10 transition-all"
-                     onClick={() => handleModeSelect('progress')}>
-            <div className="text-4xl mb-4">🎲</div>
-            <div className="text-2xl font-bold text-lime-400 font-orbitron mb-2">Γενικό Τεστ</div>
-            <div className="text-white/70 text-sm font-exo mb-4">
-              Ερωτήσεις από όσα κεφάλαια έχεις ολοκληρώσει
+            <div className="text-purple-300 font-bold font-exo text-lg">
+              PLAY NOW! 🚀
             </div>
-            <div className="text-xs text-white/50">
-              ∞ερωτήσεις
-            </div>
-          </GlassCard>
-          
-          {/* Mistakes Test */}
-          <GlassCard 
-            glowColor={isMistakeTestAvailable ? "pink" : "purple"} 
-            className={`text-center transition-all ${
-              isMistakeTestAvailable 
-                ? 'cursor-pointer hover:bg-white/10' 
-                : 'opacity-50 cursor-not-allowed'
-            }`}
-            onClick={() => isMistakeTestAvailable && handleModeSelect('mistakes')}
-          >
-            <div className="text-4xl mb-4">❌</div>
-            <div className={`text-2xl font-bold font-orbitron mb-2 ${
-              isMistakeTestAvailable ? 'text-pink-400' : 'text-purple-400'
-            }`}>
-              Τεστ Λαθών
-            </div>
-            <div className="text-white/70 text-sm font-exo mb-4">
-              Εξασκήσου ξανά μόνο σε όσα έκανες λάθος
-            </div>
-            {!loading && (
-              <div className="text-xs text-white/50">
-                {isMistakeTestAvailable 
-                  ? `${mistakeStats.questionsNeedingReview} ερωτήσεις για επανάληψη`
-                  : `Χρειάζονται 15+ λάθη (έχεις ${mistakeStats.totalMistakes})`
-                }
-              </div>
-            )}
           </GlassCard>
         </div>
 

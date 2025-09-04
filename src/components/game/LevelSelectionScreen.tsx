@@ -126,7 +126,7 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
             variant="purple"
             onClick={onBack}
           >
-            ← Back to Menu
+            ← Επιστροφή στο Μενού
           </NeonButton>
           
           <div className="text-center">

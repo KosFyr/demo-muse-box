@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HomeScreen, GameMode } from './HomeScreen';
+import { HomeScreen } from './HomeScreen';
 import { GameScreen } from './GameScreen';
 import { EndScreen } from './EndScreen';
 import { useGameMode } from '@/hooks/useGameMode';
@@ -19,7 +19,6 @@ export interface GameState {
   correctAnswers: number;
   totalQuestions: number;
   usedQuestions: Set<string>;
-  gameMode: GameMode;
   selectedCategoryIds: string[];
 }
 
@@ -32,7 +31,6 @@ export const GameContainer = () => {
     correctAnswers: 0,
     totalQuestions: 0,
     usedQuestions: new Set(),
-    gameMode: 'progress',
     selectedCategoryIds: []
   });
   
@@ -51,13 +49,8 @@ export const GameContainer = () => {
     setGameState(prev => ({ ...prev, ...state }));
   };
 
-  const handleModeSelect = async (mode: GameMode, categoryIds: string[] = []) => {
-    await initializeGameMode(mode, categoryIds);
-    setGameState(prev => ({
-      ...prev,
-      gameMode: mode,
-      selectedCategoryIds: categoryIds
-    }));
+  const handleStartGame = async () => {
+    // Start with category selection screen
     setCurrentScreen('game');
   };
 
@@ -68,7 +61,6 @@ export const GameContainer = () => {
       correctAnswers: 0,
       totalQuestions: 0,
       usedQuestions: new Set(),
-      gameMode: 'progress',
       selectedCategoryIds: []
     });
   };
@@ -76,7 +68,7 @@ export const GameContainer = () => {
   const renderCurrentScreen = () => {
     switch (currentScreen) {
       case 'home':
-        return <HomeScreen onModeSelect={handleModeSelect} />;
+        return <HomeScreen onStartGame={handleStartGame} />;
       
       case 'game':
         return (
@@ -85,7 +77,7 @@ export const GameContainer = () => {
             gameState={gameState}
             gameModeState={gameModeState}
             onGameStateUpdate={handleGameStateUpdate}
-            onGameEnd={() => handleScreenChange('end')}
+            onGameEnd={() => handleScreenChange('home')} // Go back to home instead of end screen
             onQuestionAnswered={updateQuestionStatus}
           />
         );
@@ -107,12 +99,12 @@ export const GameContainer = () => {
         );
       
       default:
-        return <HomeScreen onModeSelect={handleModeSelect} />;
+        return <HomeScreen onStartGame={handleStartGame} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-purple-600 via-purple-700 to-purple-800 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         {renderCurrentScreen()}
       </div>

@@ -21,42 +21,31 @@ export const LevelMap: React.FC<LevelMapProps> = ({
   onLevelSelect,
   totalLevels = 50
 }) => {
-  // Generate branching path positions like Waterboy & Watergirl
+  // Generate beautiful flowing path like Candy Crush
   const generateNodePosition = (index: number) => {
-    const mapWidth = 1000;
-    const mapHeight = 800;
-    const levelsPerChapter = 10;
-    const chaptersPerRow = 2;
+    const mapWidth = 800;
+    const mapHeight = 600;
     
-    const chapter = Math.floor(index / levelsPerChapter);
-    const levelInChapter = index % levelsPerChapter;
+    // Create a serpentine (S-curved) path
+    const nodesPerRow = 5;
+    const row = Math.floor(index / nodesPerRow);
+    const col = index % nodesPerRow;
     
-    const chapterRow = Math.floor(chapter / chaptersPerRow);
-    const chapterCol = chapter % chaptersPerRow;
+    // Alternate direction for each row to create zigzag
+    const isEvenRow = row % 2 === 0;
+    const actualCol = isEvenRow ? col : (nodesPerRow - 1 - col);
     
-    // Base position for chapter
-    const chapterX = (chapterCol / Math.max(1, chaptersPerRow - 1)) * mapWidth;
-    const chapterY = chapterRow * 200 + 100;
+    // Base positions
+    const baseX = 100 + (actualCol * (mapWidth - 200) / (nodesPerRow - 1));
+    const baseY = 80 + row * 100;
     
-    // Create branching path within chapter
-    const branchOffsets = [
-      { x: 0, y: 0 },      // Level 1
-      { x: -80, y: 60 },   // Level 2
-      { x: 80, y: 60 },    // Level 3
-      { x: -40, y: 120 },  // Level 4
-      { x: 40, y: 120 },   // Level 5
-      { x: 0, y: 180 },    // Level 6
-      { x: -60, y: 240 },  // Level 7
-      { x: 60, y: 240 },   // Level 8
-      { x: -20, y: 300 },  // Level 9
-      { x: 20, y: 300 }    // Level 10
-    ];
-    
-    const offset = branchOffsets[levelInChapter] || { x: 0, y: 0 };
+    // Add slight random offset for organic feel
+    const offsetX = (Math.sin(index * 0.5) * 20);
+    const offsetY = (Math.cos(index * 0.3) * 15);
     
     return {
-      x: chapterX + offset.x,
-      y: chapterY + offset.y
+      x: Math.max(60, Math.min(mapWidth - 60, baseX + offsetX)),
+      y: baseY + offsetY
     };
   };
 
@@ -104,7 +93,7 @@ export const LevelMap: React.FC<LevelMapProps> = ({
         </div>
 
         {/* Path Trail */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 800">
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 600">
           <defs>
             <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ff6ec7" stopOpacity="0.4" />
@@ -141,8 +130,8 @@ export const LevelMap: React.FC<LevelMapProps> = ({
         </svg>
 
         {/* Level Nodes */}
-        <div className="relative" style={{ height: '800px' }}>
-          {Array.from({ length: Math.min(totalLevels, levels.length || 50) }).map((_, i) => {
+        <div className="relative" style={{ height: '600px', minHeight: '600px' }}>
+          {Array.from({ length: Math.min(totalLevels, levels.length || 10) }).map((_, i) => {
             const position = generateNodePosition(i);
             const levelNumber = i + 1;
             const levelData = levels[i];
