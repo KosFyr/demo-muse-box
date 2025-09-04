@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlayerData, GameState } from './GameContainer';
+import { CategorySelectionScreen } from './CategorySelectionScreen';
 import { LevelSelectionScreen } from './LevelSelectionScreen';
 import { SingleLevelGameScreen } from './SingleLevelGameScreen';
 
@@ -21,8 +22,14 @@ export const GameScreen = ({
   onGameEnd, 
   onQuestionAnswered 
 }: GameScreenProps) => {
-  const [currentScreen, setCurrentScreen] = useState<'levelSelect' | 'playLevel'>('levelSelect');
+  const [currentScreen, setCurrentScreen] = useState<'categorySelect' | 'levelSelect' | 'playLevel'>('categorySelect');
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
+  const [selectedCategory, setSelectedCategory] = useState<{ id: string; name: string } | null>(null);
+
+  const handleCategorySelect = (categoryId: string, categoryName: string) => {
+    setSelectedCategory({ id: categoryId, name: categoryName });
+    setCurrentScreen('levelSelect');
+  };
 
   const handleLevelSelect = (levelNumber: number) => {
     setSelectedLevel(levelNumber);
@@ -41,8 +48,12 @@ export const GameScreen = ({
     setCurrentScreen('levelSelect');
   };
 
-  const handleBackToSelection = () => {
+  const handleBackToLevelSelection = () => {
     setCurrentScreen('levelSelect');
+  };
+
+  const handleBackToCategorySelection = () => {
+    setCurrentScreen('categorySelect');
   };
 
   const handleBackToMenu = () => {
@@ -53,17 +64,29 @@ export const GameScreen = ({
     return (
       <SingleLevelGameScreen
         playerData={playerData}
+        categoryId={selectedCategory?.id}
         levelNumber={selectedLevel}
         onLevelComplete={handleLevelComplete}
-        onBack={handleBackToSelection}
+        onBack={handleBackToLevelSelection}
+      />
+    );
+  }
+
+  if (currentScreen === 'levelSelect' && selectedCategory) {
+    return (
+      <LevelSelectionScreen
+        playerData={playerData}
+        categoryId={selectedCategory.id}
+        categoryName={selectedCategory.name}
+        onLevelSelect={handleLevelSelect}
+        onBack={handleBackToCategorySelection}
       />
     );
   }
 
   return (
-    <LevelSelectionScreen
-      playerData={playerData}
-      onLevelSelect={handleLevelSelect}
+    <CategorySelectionScreen
+      onCategorySelect={handleCategorySelect}
       onBack={handleBackToMenu}
     />
   );

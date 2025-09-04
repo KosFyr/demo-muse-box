@@ -18,12 +18,16 @@ interface LevelData {
 
 interface LevelSelectionScreenProps {
   playerData: PlayerData;
+  categoryId: string;
+  categoryName: string;
   onLevelSelect: (levelNumber: number) => void;
   onBack: () => void;
 }
 
 export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
   playerData,
+  categoryId,
+  categoryName,
   onLevelSelect,
   onBack
 }) => {
@@ -37,8 +41,8 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
 
   const loadLevelProgress = async () => {
     if (!user) {
-      // Create default levels with only level 1 unlocked
-      const defaultLevels = Array.from({ length: 50 }, (_, i) => ({
+      // Create default levels with only level 1 unlocked (10 levels per category)
+      const defaultLevels = Array.from({ length: 10 }, (_, i) => ({
         id: i + 1,
         isCompleted: false,
         medal: null as MedalType
@@ -49,20 +53,21 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
     }
 
     try {
-      // Load player progress from database
+      // Load player progress from database for this category
       const { data: progressData, error } = await supabase
         .from('player_progress')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('category_id', categoryId);
 
       if (error) throw error;
 
-      // Create level data based on progress
-      const levelData = Array.from({ length: 50 }, (_, i) => {
+      // Create level data based on progress (10 levels per category)
+      const levelData = Array.from({ length: 10 }, (_, i) => {
         const levelNumber = i + 1;
-        // For now, use a simple scoring system based on completion
-        // In a real implementation, you'd store actual scores per level
-        const isCompleted = progressData?.some(p => p.current_position > levelNumber);
+        // Check if this specific level is completed
+        const categoryProgress = progressData?.[0]; // Should be only one record per category
+        const isCompleted = categoryProgress ? categoryProgress.current_position > levelNumber : false;
         const score = isCompleted ? Math.floor(60 + Math.random() * 40) : undefined; // Random score for demo
         
         let medal: MedalType = null;
@@ -83,8 +88,8 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
       setLevels(levelData);
     } catch (error) {
       console.error('Error loading level progress:', error);
-      // Fallback to default levels
-      const defaultLevels = Array.from({ length: 50 }, (_, i) => ({
+      // Fallback to default levels (10 levels per category)
+      const defaultLevels = Array.from({ length: 10 }, (_, i) => ({
         id: i + 1,
         isCompleted: false,
         medal: null as MedalType
@@ -125,11 +130,11 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
           </NeonButton>
           
           <div className="text-center">
-            <h1 className="text-3xl font-orbitron font-bold text-white mb-2">
-              Choose Your Challenge
+            <h1 className="text-2xl font-orbitron font-bold text-white mb-2">
+              {categoryName}
             </h1>
             <p className="text-white/70 font-exo">
-              Select a level to start your learning adventure!
+              Επιλέξτε πίστα για να ξεκινήσετε την περιπέτεια!
             </p>
           </div>
           
@@ -141,7 +146,7 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
           <LevelMap
             levels={levels}
             onLevelSelect={handleLevelSelect}
-            totalLevels={50}
+            totalLevels={10}
           />
         </div>
 
