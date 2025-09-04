@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NeonButton } from '@/components/ui/NeonButton';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { cn } from '@/lib/utils';
+import { fuzzyMatch } from '@/lib/fuzzyMatch';
 
 interface Exercise {
   id: string;
@@ -25,8 +26,8 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
 }) => {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [hasAnswered, setHasAnswered] = useState(false);
-  const [showHint, setShowHint] = useState(false);
   const [answers, setAnswers] = useState<string[]>([]);
+  const [answerResults, setAnswerResults] = useState<boolean[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Parse the exercise text to find blanks (represented by ________) 
@@ -42,8 +43,8 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
     // Initialize answers array
     setUserAnswers(new Array(blankCount).fill(''));
     setHasAnswered(false);
-    setShowHint(false);
     setAnswers([]);
+    setAnswerResults([]);
   }, [exercise, blankCount]);
 
   const handleInputChange = (index: number, value: string) => {
@@ -57,19 +58,20 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
     
     setIsSubmitting(true);
     
-    // Check answers
-    const isCorrect = userAnswers.every((answer, index) => 
-      answer.toLowerCase().trim() === exercise.answers[index]?.toLowerCase().trim()
-    );
+    // Check answers using fuzzy matching
+    const results = userAnswers.map((answer, index) => {
+      const { isMatch } = fuzzyMatch(answer, exercise.answers[index] || '');
+      return isMatch;
+    });
     
     setAnswers(userAnswers);
+    setAnswerResults(results);
     setHasAnswered(true);
-    
-    // Show feedback for 2 seconds, then proceed
-    setTimeout(() => {
-      onAnswerSubmit(userAnswers);
-      setIsSubmitting(false);
-    }, 2000);
+    setIsSubmitting(false);
+  };
+
+  const handleNextQuestion = () => {
+    onAnswerSubmit(userAnswers);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, index: number) => {
@@ -90,19 +92,11 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
   return (
     <GlassCard glowColor="cyan" className="w-full max-w-4xl mx-auto">
       <div className="space-y-6">
-        {/* Question Header */}
+        {/* Progress Header */}
         <div className="text-center">
-          <div className="flex justify-between items-center mb-4">
-            <div className="text-cyan-400 font-orbitron font-bold">
-              Ερώτηση {questionNumber}
-            </div>
-            <div className="text-white/70 font-exo">
-              {questionNumber} / {totalQuestions}
-            </div>
+          <div className="text-white/70 font-exo text-lg mb-6">
+            {questionNumber} / {totalQuestions}
           </div>
-          <h2 className="text-2xl md:text-3xl font-orbitron font-bold text-white mb-4">
-            Συμπληρώστε τα <span className="text-cyan-400 text-shadow-neon">κενά</span> 🧩
-          </h2>
         </div>
 
         {/* Question Text with Input Fields */}
@@ -114,17 +108,26 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
                 {index < blankCount && (
                   <span className="inline-block mx-2">
                     {hasAnswered ? (
-                      // Show result after answering
-                      <span 
-                        className={cn(
-                          "px-3 py-2 rounded-lg border-2 font-medium",
-                          answers[index]?.toLowerCase().trim() === exercise.answers[index]?.toLowerCase().trim()
+                      // Show result after answering with split display
+                      <div className="inline-flex flex-col items-center gap-1">
+                        <div className={cn(
+                          "flex items-center gap-2 px-3 py-2 rounded-lg border-2 font-medium text-sm",
+                          answerResults[index] 
                             ? "bg-emerald-500/20 border-emerald-400/50 text-emerald-200"
                             : "bg-red-500/20 border-red-400/50 text-red-200"
+                        )}>
+                          <span className={answerResults[index] ? "text-emerald-300" : "text-red-300"}>
+                            Απάντησή σας:
+                          </span>
+                          <span className="font-bold">{answers[index]}</span>
+                        </div>
+                        {!answerResults[index] && (
+                          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-2 bg-emerald-500/20 border-emerald-400/50 text-emerald-200 font-medium text-sm">
+                            <span className="text-emerald-300">Σωστή απάντηση:</span>
+                            <span className="font-bold">{exercise.answers[index]}</span>
+                          </div>
                         )}
-                      >
-                        {answers[index]?.toLowerCase().trim() === exercise.answers[index]?.toLowerCase().trim() ? '✔' : '✘'} {answers[index]}
-                      </span>
+                      </div>
                     ) : (
                       // Show input field
                       <input
@@ -145,37 +148,21 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
           </div>
         </div>
 
-        {/* Feedback Section */}
+        {/* Next Question Button */}
         {hasAnswered && (
-          <div className="space-y-4">
-            {/* Show correct answers for incorrect ones */}
-            <div className="bg-black/20 rounded-xl p-4 border border-green-500/30">
-              <h3 className="text-green-400 font-orbitron font-bold mb-3">Σωστές Απαντήσεις:</h3>
-              <div className="space-y-2">
-                {exercise.answers.map((correctAnswer, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="text-white/70 w-16">Κενό {index + 1}:</span>
-                    <span className="text-green-300 font-medium">{correctAnswer}</span>
-                    {answers[index]?.toLowerCase().trim() === correctAnswer.toLowerCase().trim() && (
-                      <span className="text-green-400">✓ Σωστό!</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Processing indicator */}
-            <div className="text-center">
-              <div className="text-cyan-400 font-exo animate-pulse">
-                Επόμενη ερώτηση σε λίγο... ⏳
-              </div>
-            </div>
+          <div className="text-center">
+            <NeonButton
+              variant="cyan"
+              onClick={handleNextQuestion}
+            >
+              Επόμενη Ερώτηση ➡️
+            </NeonButton>
           </div>
         )}
 
         {/* Action Buttons */}
         {!hasAnswered && (
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex justify-center">
             <NeonButton
               variant="lime"
               onClick={handleSubmit}
@@ -183,27 +170,7 @@ export const FillBlankQuestion: React.FC<FillBlankQuestionProps> = ({
             >
               {isSubmitting ? 'Επεξεργασία... ⚡' : 'Υποβολή Απάντησης ⚡'}
             </NeonButton>
-            
-            <NeonButton
-              variant="purple"
-              onClick={() => setShowHint(!showHint)}
-              disabled={isSubmitting}
-            >
-              {showHint ? 'Απόκρυψη Υπόδειξης 👁️' : 'Δείτε Υπόδειξη 💡'}
-            </NeonButton>
           </div>
-        )}
-
-        {/* Hint Display */}
-        {showHint && !hasAnswered && (
-          <GlassCard glowColor="purple" className="bg-purple-500/10">
-            <div className="flex items-center gap-3 text-purple-300">
-              <span className="text-2xl">💡</span>
-              <span className="font-exo">
-                Σκεφτείτε τις βασικές έννοιες προγραμματισμού! ({blankCount} κενά για συμπλήρωση)
-              </span>
-            </div>
-          </GlassCard>
         )}
       </div>
     </GlassCard>

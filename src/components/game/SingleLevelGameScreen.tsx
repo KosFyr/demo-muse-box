@@ -8,6 +8,7 @@ import { ConfettiEffect } from './ConfettiEffect';
 import { PlayerData } from './GameContainer';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { fuzzyMatch } from '@/lib/fuzzyMatch';
 
 interface FillBlankExercise {
   id: string;
@@ -96,9 +97,14 @@ export const SingleLevelGameScreen: React.FC<SingleLevelGameScreenProps> = ({
 
   const handleAnswerSubmit = (userAnswers: string[]) => {
     const currentExercise = exercises[currentQuestionIndex];
-    const isCorrect = userAnswers.every((answer, index) => 
-      answer.toLowerCase().trim() === currentExercise.answers[index]?.toLowerCase().trim()
-    );
+    
+    // Use fuzzy matching to check answers
+    const results = userAnswers.map((answer, index) => {
+      const { isMatch } = fuzzyMatch(answer, currentExercise.answers[index] || '');
+      return isMatch;
+    });
+    
+    const isCorrect = results.every(Boolean);
     
     setAnswers([...answers, ...userAnswers]);
     setCorrectAnswers([...correctAnswers, isCorrect]);
@@ -109,14 +115,10 @@ export const SingleLevelGameScreen: React.FC<SingleLevelGameScreenProps> = ({
     }
     
     if (currentQuestionIndex < exercises.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      }, 1500);
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Game completed
-      setTimeout(() => {
-        setGameCompleted(true);
-      }, 1500);
+      setGameCompleted(true);
     }
   };
 
