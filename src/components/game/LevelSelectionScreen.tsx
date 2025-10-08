@@ -40,19 +40,29 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
   }, [user]);
 
   const loadLevelProgress = async () => {
-    if (!user) {
-      // Create default levels with only level 1 unlocked (10 levels per category)
-      const defaultLevels = Array.from({ length: 10 }, (_, i) => ({
-        id: i + 1,
-        isCompleted: false,
-        medal: null as MedalType
-      }));
-      setLevels(defaultLevels);
-      setLoading(false);
-      return;
-    }
-
     try {
+      // First, count how many exercises exist for this category
+      const { count: exerciseCount, error: countError } = await supabase
+        .from('fill_blank_exercises')
+        .select('*', { count: 'exact', head: true })
+        .eq('category_id', categoryId);
+
+      if (countError) throw countError;
+
+      const totalExercises = exerciseCount || 1; // At least 1 level
+
+      if (!user) {
+        // Create default levels with only level 1 unlocked
+        const defaultLevels = Array.from({ length: totalExercises }, (_, i) => ({
+          id: i + 1,
+          isCompleted: false,
+          medal: null as MedalType
+        }));
+        setLevels(defaultLevels);
+        setLoading(false);
+        return;
+      }
+
       // Load player progress from database for this category
       const { data: progressData, error } = await supabase
         .from('player_progress')
@@ -62,8 +72,8 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
 
       if (error) throw error;
 
-      // Create level data based on progress (10 levels per category)
-      const levelData = Array.from({ length: 10 }, (_, i) => {
+      // Create level data based on actual exercise count
+      const levelData = Array.from({ length: totalExercises }, (_, i) => {
         const levelNumber = i + 1;
         // Check if this specific level is completed
         const categoryProgress = progressData?.[0]; // Should be only one record per category
@@ -88,12 +98,12 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
       setLevels(levelData);
     } catch (error) {
       console.error('Error loading level progress:', error);
-      // Fallback to default levels (10 levels per category)
-      const defaultLevels = Array.from({ length: 10 }, (_, i) => ({
-        id: i + 1,
+      // Fallback to default single level
+      const defaultLevels = [{
+        id: 1,
         isCompleted: false,
         medal: null as MedalType
-      }));
+      }];
       setLevels(defaultLevels);
     } finally {
       setLoading(false);
@@ -146,7 +156,6 @@ export const LevelSelectionScreen: React.FC<LevelSelectionScreenProps> = ({
           <LevelMap
             levels={levels}
             onLevelSelect={handleLevelSelect}
-            totalLevels={10}
           />
         </div>
 

@@ -48,12 +48,12 @@ export const SingleLevelGameScreen: React.FC<SingleLevelGameScreenProps> = ({
   const loadExercises = async () => {
     if (!categoryId) {
       // Fallback to mock data if no category
-      const mockQuestions = Array.from({ length: 10 }, (_, i) => ({
-        id: `q${i + 1}`,
-        exercise_text: `Ερώτηση ${i + 1}: Συμπληρώστε το κενό στην πρόταση: "Ο αλγόριθμος είναι μία ________ οδηγιών που οδηγούν στην επίλυση ενός προβλήματος."`,
+      const mockQuestions = [{
+        id: 'q1',
+        exercise_text: `Συμπληρώστε το κενό στην πρόταση: "Ο αλγόριθμος είναι μία ________ οδηγιών που οδηγούν στην επίλυση ενός προβλήματος."`,
         answers: ['ακολουθία'],
         difficulty_level: 1
-      }));
+      }];
       setExercises(mockQuestions);
       setLoading(false);
       return;
@@ -64,7 +64,7 @@ export const SingleLevelGameScreen: React.FC<SingleLevelGameScreenProps> = ({
         .from('fill_blank_exercises')
         .select('*')
         .eq('category_id', categoryId)
-        .limit(10); // Limit to 10 exercises per level
+        .range(levelNumber - 1, levelNumber - 1); // Get only 1 exercise for this level
 
       if (error) throw error;
 
@@ -72,23 +72,23 @@ export const SingleLevelGameScreen: React.FC<SingleLevelGameScreenProps> = ({
         setExercises(data);
       } else {
         // Fallback if no exercises found
-        const mockQuestions = Array.from({ length: 10 }, (_, i) => ({
-          id: `q${i + 1}`,
-          exercise_text: `Ερώτηση ${i + 1}: Συμπληρώστε το κενό στην πρόταση: "Ο αλγόριθμος είναι μία ________ οδηγιών που οδηγούν στην επίλυση ενός προβλήματος."`,
+        const mockQuestions = [{
+          id: 'q1',
+          exercise_text: `Συμπληρώστε το κενό στην πρόταση: "Ο αλγόριθμος είναι μία ________ οδηγιών που οδηγούν στην επίλυση ενός προβλήματος."`,
           answers: ['ακολουθία'],
           difficulty_level: 1
-        }));
+        }];
         setExercises(mockQuestions);
       }
     } catch (error) {
       console.error('Error loading exercises:', error);
       // Fallback to mock data on error
-      const mockQuestions = Array.from({ length: 10 }, (_, i) => ({
-        id: `q${i + 1}`,
-        exercise_text: `Ερώτηση ${i + 1}: Συμπληρώστε το κενό στην πρόταση: "Ο αλγόριθμος είναι μία ________ οδηγιών που οδηγούν στην επίλυση ενός προβλήματος."`,
+      const mockQuestions = [{
+        id: 'q1',
+        exercise_text: `Συμπληρώστε το κενό στην πρόταση: "Ο αλγόριθμος είναι μία ________ οδηγιών που οδηγούν στην επίλυση ενός προβλήματος."`,
         answers: ['ακολουθία'],
         difficulty_level: 1
-      }));
+      }];
       setExercises(mockQuestions);
     } finally {
       setLoading(false);

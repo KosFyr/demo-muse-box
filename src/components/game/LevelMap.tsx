@@ -19,8 +19,9 @@ interface LevelMapProps {
 export const LevelMap: React.FC<LevelMapProps> = ({
   levels,
   onLevelSelect,
-  totalLevels = 50
+  totalLevels
 }) => {
+  const actualTotalLevels = totalLevels || levels.length;
   // Generate beautiful flowing path like Candy Crush
   const generateNodePosition = (index: number) => {
     const mapWidth = 800;
@@ -107,7 +108,7 @@ export const LevelMap: React.FC<LevelMapProps> = ({
           </defs>
           
           {/* Draw connecting paths between levels */}
-          {Array.from({ length: Math.min(totalLevels, levels.length) - 1 }).map((_, i) => {
+          {Array.from({ length: Math.min(actualTotalLevels, levels.length) - 1 }).map((_, i) => {
             const start = generateNodePosition(i);
             const end = generateNodePosition(i + 1);
             const isPathCompleted = levels[i]?.isCompleted && levels[i + 1]?.isCompleted;
@@ -131,7 +132,7 @@ export const LevelMap: React.FC<LevelMapProps> = ({
 
         {/* Level Nodes */}
         <div className="relative" style={{ height: '600px', minHeight: '600px' }}>
-          {Array.from({ length: Math.min(totalLevels, levels.length || 10) }).map((_, i) => {
+          {Array.from({ length: Math.min(actualTotalLevels, levels.length || 1) }).map((_, i) => {
             const position = generateNodePosition(i);
             const levelNumber = i + 1;
             const levelData = levels[i];
