@@ -209,7 +209,7 @@ export const CategorySelectionScreen: React.FC<CategorySelectionScreenProps> = (
                   <div className="space-y-4">
                     <div>
                       <h3 className={`font-orbitron font-bold text-lg ${colors.accent} mb-2`}>
-                        {category.name.replace('Κεφάλαιο ' + category.order_index + ': ', '')}
+                        {category.name}
                       </h3>
                       <p className="text-white/80 font-exo text-sm">
                         {category.description}
